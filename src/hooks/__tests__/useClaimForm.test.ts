@@ -11,8 +11,13 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useClaimForm } from '../useClaimForm';
+import { removeItem } from '@/services/storage/mmkv';
 
 describe('useClaimForm', () => {
+  beforeEach(() => {
+    removeItem('claimDrafts');
+  });
+
   it('initializes at step 0 (first step)', () => {
     const { result } = renderHook(() => useClaimForm());
 

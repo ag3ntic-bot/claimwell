@@ -106,12 +106,29 @@ export function useClaimForm(initialStep = 0): UseClaimFormReturn {
   }, [form]);
 
   const next = useCallback(async (): Promise<boolean> => {
+    const schema = stepSchemas[currentStep];
     const fields = STEP_FIELDS[currentStep];
-    if (!fields) return false;
+    if (!schema || !fields) return false;
 
-    // Validate only the current step's fields
-    const isValid = await form.trigger(fields);
-    if (!isValid) return false;
+    // Validate current step's fields against the step-specific schema
+    const values: Record<string, unknown> = {};
+    for (const field of fields) {
+      values[field] = form.getValues(field);
+    }
+
+    const result = schema.safeParse(values);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const fieldName = issue.path[0] as keyof ClaimFormData;
+        form.setError(fieldName, { message: issue.message });
+      }
+      return false;
+    }
+
+    // Clear any previous errors for these fields
+    for (const field of fields) {
+      form.clearErrors(field);
+    }
 
     if (currentStep < TOTAL_STEPS - 1) {
       currentStepField.setValue('step', currentStep + 1);

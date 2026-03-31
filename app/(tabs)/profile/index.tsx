@@ -59,7 +59,7 @@ export default function ProfileScreen() {
   const handleSettingsPress = useCallback(
     (item: SettingsItem) => {
       if (item.route) {
-        router.push(item.route as any);
+        router.push(item.route as never);
       } else {
         Alert.alert(item.label, `${item.label} settings will be available in a future update.`);
       }

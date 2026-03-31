@@ -212,7 +212,7 @@ describe('AI validation schemas', () => {
         }),
       };
 
-      const result = validateAIOutput(AISummarySchema, raw as any, 'summarize');
+      const result = validateAIOutput(AISummarySchema, raw, 'summarize');
       expect(result.summary).toBe('From content.');
     });
 
@@ -221,7 +221,7 @@ describe('AI validation schemas', () => {
         content: 'not valid json {{{',
       };
 
-      expect(() => validateAIOutput(AISummarySchema, raw as any, 'summarize')).toThrow(
+      expect(() => validateAIOutput(AISummarySchema, raw, 'summarize')).toThrow(
         AIValidationError,
       );
     });

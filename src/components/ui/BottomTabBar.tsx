@@ -164,7 +164,7 @@ const TabItem: React.FC<TabItemProps> = ({
 
 // -- Center FAB Tab --
 
-interface CenterTabProps extends TabItemProps {}
+type CenterTabProps = TabItemProps;
 
 const CenterTab: React.FC<CenterTabProps> = ({
   iconName,
