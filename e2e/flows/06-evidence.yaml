@@ -1,0 +1,49 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 06 - Evidence Tab: View & Upload Card
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to claim detail
+- tapOn:
+    id: "claim-card"
+    index: 0
+
+- waitForAnimationToEnd
+
+# Tap Evidence tab
+- tapOn:
+    text: "Evidence"
+
+- waitForAnimationToEnd
+
+# Evidence cards visible
+- assertVisible:
+    id: "evidence-grid"
+
+# Add Evidence upload card visible
+- scrollUntilVisible:
+    element:
+      text: "Add Evidence"
+    direction: DOWN
+
+- assertVisible:
+    text: "Add Evidence"

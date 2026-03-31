@@ -1,0 +1,78 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 08 - Response Analyzer: Paste & Analyze
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to response analyzer (via Strategy tab or direct nav)
+- tapOn:
+    id: "tab-strategy"
+
+- waitForAnimationToEnd
+
+- scrollUntilVisible:
+    element:
+      text: "Response Analyzer"
+    direction: DOWN
+
+- tapOn:
+    text: "Response Analyzer"
+
+- waitForAnimationToEnd
+
+# Heading visible
+- assertVisible:
+    text: "Response Analyzer"
+
+# Textarea for pasting reply
+- assertVisible:
+    id: "response-textarea"
+
+# Enter response text
+- tapOn:
+    id: "response-textarea"
+- inputText: "We regret to inform you that your claim has been denied"
+
+# Tap Analyze button
+- tapOn:
+    text: "Analyze Response"
+
+- waitForAnimationToEnd
+
+# Analysis results appear
+- assertVisible:
+    id: "analysis-results"
+
+- scrollUntilVisible:
+    element:
+      text: "Sentiment"
+    direction: DOWN
+
+- assertVisible:
+    text: "Sentiment"
+
+- scrollUntilVisible:
+    element:
+      text: "Probability"
+    direction: DOWN
+
+- assertVisible:
+    text: "Probability"

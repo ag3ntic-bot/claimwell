@@ -1,0 +1,96 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 05 - Claim Detail: All Tabs
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Tap first claim card on dashboard
+- tapOn:
+    id: "claim-card"
+    index: 0
+
+- waitForAnimationToEnd
+
+# Overview tab should be active by default
+- assertVisible:
+    text: "Overview"
+
+# AI Summary visible
+- assertVisible:
+    text: "AI Summary"
+
+# Win Probability visible
+- scrollUntilVisible:
+    element:
+      text: "Win Probability"
+    direction: DOWN
+
+- assertVisible:
+    text: "Win Probability"
+
+# Tap Evidence tab
+- tapOn:
+    text: "Evidence"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    id: "evidence-grid"
+
+# Tap Timeline tab
+- tapOn:
+    text: "Timeline"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    id: "timeline-events"
+
+# Tap Strategy tab
+- tapOn:
+    text: "Strategy"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Strategy"
+
+- scrollUntilVisible:
+    element:
+      text: "Escalation"
+    direction: DOWN
+
+- assertVisible:
+    text: "Escalation"
+
+# Tap Drafts tab
+- tapOn:
+    text: "Drafts"
+
+- waitForAnimationToEnd
+
+# Tone selector visible
+- assertVisible:
+    id: "tone-selector"
+
+# Draft content visible
+- assertVisible:
+    id: "draft-content"

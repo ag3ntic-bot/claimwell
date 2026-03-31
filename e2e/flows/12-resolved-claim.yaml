@@ -1,0 +1,83 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 12 - Resolved Claim Screen
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to a resolved claim
+# Scroll down to find a resolved claim on the dashboard
+- scrollUntilVisible:
+    element:
+      text: "Resolved"
+    direction: DOWN
+
+- tapOn:
+    text: "Resolved"
+
+- waitForAnimationToEnd
+
+# Tap on the first resolved claim
+- tapOn:
+    id: "claim-card"
+    index: 0
+
+- waitForAnimationToEnd
+
+# Verify resolved claim screen
+- assertVisible:
+    text: "Claim Resolved successfully!"
+
+# Dollar amount visible
+- assertVisible:
+    id: "resolved-amount"
+
+# Resolution details visible
+- scrollUntilVisible:
+    element:
+      text: "Resolution"
+    direction: DOWN
+
+- assertVisible:
+    text: "Resolution"
+
+# Stats row visible
+- scrollUntilVisible:
+    element:
+      text: "Speed"
+    direction: DOWN
+
+- assertVisible:
+    text: "Speed"
+
+- assertVisible:
+    text: "Engagement"
+
+- assertVisible:
+    text: "Process"
+
+# Archive Case button visible
+- scrollUntilVisible:
+    element:
+      text: "Archive Case"
+    direction: DOWN
+
+- assertVisible:
+    text: "Archive Case"

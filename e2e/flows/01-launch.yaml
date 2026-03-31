@@ -1,0 +1,15 @@
+appId: com.claimwell.app
+tags:
+  - smoke
+---
+
+# 01 - App Launch & Onboarding Screen Visible
+- launchApp
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Get what's yours with Claimwell"
+
+- assertVisible:
+    text: "Get Started"

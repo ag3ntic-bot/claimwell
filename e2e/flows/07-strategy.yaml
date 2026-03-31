@@ -1,0 +1,42 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 07 - Strategy Hub via Bottom Nav
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Tap Strategy tab in bottom navigation
+- tapOn:
+    id: "tab-strategy"
+
+- waitForAnimationToEnd
+
+# Strategy Hub heading visible
+- assertVisible:
+    text: "Strategy Hub"
+
+# Claim strategy cards with strength percentages
+- assertVisible:
+    id: "strategy-card"
+
+- scrollUntilVisible:
+    element:
+      text: "%"
+    direction: DOWN

@@ -1,0 +1,63 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 11 - Profile Screen
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Tap Profile tab
+- tapOn:
+    id: "tab-profile"
+
+- waitForAnimationToEnd
+
+# User name visible
+- assertVisible:
+    text: "Alexander Vance"
+
+# Pro Member badge visible
+- assertVisible:
+    text: "Pro Member"
+
+# Settings menu items
+- scrollUntilVisible:
+    element:
+      text: "Notifications"
+    direction: DOWN
+
+- assertVisible:
+    text: "Notifications"
+
+- scrollUntilVisible:
+    element:
+      text: "Privacy"
+    direction: DOWN
+
+- assertVisible:
+    text: "Privacy"
+
+# Sign Out button visible
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+
+- assertVisible:
+    text: "Sign Out"

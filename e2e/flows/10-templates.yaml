@@ -1,0 +1,54 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 10 - Template Library
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to template library (via Strategy tab)
+- tapOn:
+    id: "tab-strategy"
+
+- waitForAnimationToEnd
+
+- scrollUntilVisible:
+    element:
+      text: "Template Library"
+    direction: DOWN
+
+- tapOn:
+    text: "Template Library"
+
+- waitForAnimationToEnd
+
+# Heading visible
+- assertVisible:
+    text: "Template Library"
+
+# Search bar visible
+- assertVisible:
+    id: "template-search"
+
+# Category cards visible
+- assertVisible:
+    text: "Refunds"
+
+- assertVisible:
+    text: "Warranty"

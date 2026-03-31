@@ -1,0 +1,58 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 09 - Draft Generator: Tone Selection & Actions
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to claim detail
+- tapOn:
+    id: "claim-card"
+    index: 0
+
+- waitForAnimationToEnd
+
+# Tap Drafts tab
+- tapOn:
+    text: "Drafts"
+
+- waitForAnimationToEnd
+
+# Tone selector shows 3 options
+- assertVisible:
+    id: "tone-selector"
+
+# Tap "Calm" tone
+- tapOn:
+    text: "Calm"
+
+- waitForAnimationToEnd
+
+# Draft content area visible
+- assertVisible:
+    id: "draft-content"
+
+# Copy button visible
+- assertVisible:
+    text: "Copy"
+
+# Regenerate button visible
+- assertVisible:
+    text: "Regenerate"

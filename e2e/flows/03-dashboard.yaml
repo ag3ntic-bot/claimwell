@@ -1,0 +1,60 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 03 - Dashboard: Verify Key Sections
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in first
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Verify dashboard stats
+- assertVisible:
+    text: "Active Claims"
+
+- assertVisible:
+    text: "Money at Stake"
+
+- assertVisible:
+    text: "Recovered"
+
+# Verify Actions Needed Today section
+- scrollUntilVisible:
+    element:
+      text: "Actions Needed Today"
+    direction: DOWN
+
+- assertVisible:
+    text: "Actions Needed Today"
+
+# Verify at least one active claim card is visible
+- scrollUntilVisible:
+    element:
+      id: "claim-card"
+    direction: DOWN
+
+- assertVisible:
+    id: "claim-card"
+
+# Verify strategy insight card
+- scrollUntilVisible:
+    element:
+      text: "Strategy"
+    direction: DOWN
+
+- assertVisible:
+    text: "Strategy"

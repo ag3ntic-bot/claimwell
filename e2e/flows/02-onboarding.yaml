@@ -1,0 +1,41 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 02 - Onboarding: Sign In Flow
+- launchApp
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Get Started"
+
+- tapOn:
+    text: "Get Started"
+
+- waitForAnimationToEnd
+
+# Sign-in screen should appear
+- assertVisible:
+    text: "Sign In"
+
+# Enter email
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+
+# Enter password
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+
+# Tap Sign In button
+- tapOn:
+    text: "Sign In"
+
+- waitForAnimationToEnd
+
+# Dashboard should appear
+- assertVisible:
+    text: "Welcome back"

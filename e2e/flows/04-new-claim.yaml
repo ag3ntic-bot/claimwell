@@ -1,0 +1,92 @@
+appId: com.claimwell.app
+tags:
+  - critical
+---
+
+# 04 - New Claim: Full Submission Flow
+- launchApp
+
+- waitForAnimationToEnd
+
+# Sign in
+- tapOn:
+    text: "Get Started"
+- waitForAnimationToEnd
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+- tapOn:
+    text: "Sign In"
+- waitForAnimationToEnd
+
+# Tap New tab (center FAB)
+- tapOn:
+    id: "new-claim-fab"
+
+- waitForAnimationToEnd
+
+# Step 1: Category selection
+- assertVisible:
+    text: "What are we claiming?"
+
+- tapOn:
+    text: "Warranty Claim"
+
+- tapOn:
+    text: "Next"
+
+- waitForAnimationToEnd
+
+# Step 2: Company name
+- tapOn:
+    id: "company-name-input"
+- inputText: "Apple"
+
+- tapOn:
+    text: "Next"
+
+- waitForAnimationToEnd
+
+# Step 3: Description and amount
+- tapOn:
+    id: "description-input"
+- inputText: "My iPhone screen cracked"
+
+- tapOn:
+    id: "amount-input"
+- inputText: "1199"
+
+- tapOn:
+    text: "Next"
+
+- waitForAnimationToEnd
+
+# Step 4: Evidence screen
+- assertVisible:
+    text: "Add your evidence"
+
+- tapOn:
+    text: "Skip for now"
+
+- waitForAnimationToEnd
+
+# Step 5: Review screen
+- assertVisible:
+    text: "Review"
+
+- scrollUntilVisible:
+    element:
+      text: "Submit Claim"
+    direction: DOWN
+
+- tapOn:
+    text: "Submit Claim"
+
+- waitForAnimationToEnd
+
+# Should return to dashboard
+- assertVisible:
+    text: "Welcome back"

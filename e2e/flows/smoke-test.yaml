@@ -1,0 +1,89 @@
+appId: com.claimwell.app
+tags:
+  - smoke
+---
+
+# Smoke Test - Critical Path End-to-End
+# App Launch -> Onboarding -> Sign In -> Dashboard -> Claim Detail -> Back -> Profile -> Sign Out
+
+# 1. App launches
+- launchApp
+
+- waitForAnimationToEnd
+
+# 2. Onboarding screen visible
+- assertVisible:
+    text: "Get what's yours with Claimwell"
+
+# 3. Tap Get Started
+- tapOn:
+    text: "Get Started"
+
+- waitForAnimationToEnd
+
+# 4. Sign In
+- tapOn:
+    id: "email-input"
+- inputText: "testuser@claimwell.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "Test1234!"
+
+- tapOn:
+    text: "Sign In"
+
+- waitForAnimationToEnd
+
+# 5. Dashboard visible
+- assertVisible:
+    text: "Welcome back"
+
+- assertVisible:
+    text: "Active Claims"
+
+# 6. Tap first claim card
+- tapOn:
+    id: "claim-card"
+    index: 0
+
+- waitForAnimationToEnd
+
+# 7. Claim detail visible
+- assertVisible:
+    text: "Overview"
+
+- assertVisible:
+    text: "AI Summary"
+
+# 8. Go back to dashboard
+- back
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Welcome back"
+
+# 9. Navigate to Profile
+- tapOn:
+    id: "tab-profile"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Alexander Vance"
+
+# 10. Tap Sign Out
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+
+- tapOn:
+    text: "Sign Out"
+
+- waitForAnimationToEnd
+
+# 11. Should return to onboarding/sign-in screen
+- assertVisible:
+    text: "Get Started"
