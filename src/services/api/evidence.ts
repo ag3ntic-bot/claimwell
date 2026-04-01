@@ -5,7 +5,9 @@ import type { UploadEvidenceRequest } from './types';
 
 export async function fetchEvidence(claimId: string): Promise<Evidence[]> {
   try {
-    const response = await apiClient.get<Evidence[]>(`/api/claims/${claimId}/evidence`);
+    const response = await apiClient.get<Evidence[]>('/claims-evidence', {
+      params: { claimId },
+    });
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -29,8 +31,9 @@ export async function uploadEvidence(
     } as unknown as Blob);
     formData.append('claimId', claimId);
 
-    const response = await apiClient.post<Evidence>(`/api/claims/${claimId}/evidence`, formData, {
+    const response = await apiClient.post<Evidence>('/claims-evidence', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      params: { claimId },
     });
     return response.data;
   } catch (error) {
@@ -59,11 +62,10 @@ export async function uploadEvidence(
 
 export async function deleteEvidence(id: string): Promise<void> {
   try {
-    await apiClient.delete(`/api/evidence/${id}`);
+    await apiClient.delete('/evidence-delete', { params: { id } });
   } catch (error) {
     const apiError = ApiError.from(error);
     if (__DEV__ && apiError.isNetworkError) {
-      // No-op in dev when API is unreachable
       return;
     }
     throw apiError;

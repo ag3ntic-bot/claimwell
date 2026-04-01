@@ -2,32 +2,38 @@ import { http, HttpResponse } from 'msw';
 import {
   mockClaims,
   mockEvidence,
-  mockStrategy,
   mockTemplates,
   mockUser,
   mockSettings,
 } from '@/testing/fixtures';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'http://localhost:54321/functions/v1';
 
 export const handlers = [
-  // GET /api/claims - list all claims
-  http.get(`${BASE_URL}/api/claims`, () => {
-    return HttpResponse.json({ data: mockClaims });
+  // GET /claims - list all claims
+  http.get(`${BASE_URL}/claims`, () => {
+    return HttpResponse.json({
+      data: mockClaims,
+      total: mockClaims.length,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
   }),
 
-  // GET /api/claims/:id - get single claim
-  http.get(`${BASE_URL}/api/claims/:id`, ({ params }) => {
-    const { id } = params;
+  // GET /claims-by-id - get single claim
+  http.get(`${BASE_URL}/claims-by-id`, ({ request }) => {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
     const claim = mockClaims.find((c) => c.id === id);
     if (!claim) {
       return HttpResponse.json({ error: 'Claim not found' }, { status: 404 });
     }
-    return HttpResponse.json({ data: claim });
+    return HttpResponse.json(claim);
   }),
 
-  // POST /api/claims - create new claim
-  http.post(`${BASE_URL}/api/claims`, async ({ request }) => {
+  // POST /claims - create new claim
+  http.post(`${BASE_URL}/claims`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const newClaim = {
       id: 'clm_new',
@@ -43,37 +49,29 @@ export const handlers = [
       caseId: '#NEW-00001',
       ...body,
     };
-    return HttpResponse.json({ data: newClaim }, { status: 201 });
+    return HttpResponse.json(newClaim, { status: 201 });
   }),
 
-  // GET /api/claims/:id/evidence - get evidence for a claim
-  http.get(`${BASE_URL}/api/claims/:id/evidence`, ({ params }) => {
-    const { id } = params;
-    const evidence = mockEvidence.filter((e) => e.claimId === id);
-    return HttpResponse.json({ data: evidence });
+  // GET /claims-evidence - get evidence for a claim
+  http.get(`${BASE_URL}/claims-evidence`, ({ request }) => {
+    const url = new URL(request.url);
+    const claimId = url.searchParams.get('claimId');
+    const evidence = mockEvidence.filter((e) => e.claimId === claimId);
+    return HttpResponse.json(evidence);
   }),
 
-  // GET /api/claims/:id/strategy - get strategy for a claim
-  http.get(`${BASE_URL}/api/claims/:id/strategy`, ({ params }) => {
-    const { id } = params;
-    if (mockStrategy.claimId === id) {
-      return HttpResponse.json({ data: mockStrategy });
-    }
-    return HttpResponse.json({ error: 'Strategy not found' }, { status: 404 });
+  // GET /templates - list all templates
+  http.get(`${BASE_URL}/templates`, () => {
+    return HttpResponse.json(mockTemplates);
   }),
 
-  // GET /api/templates - list all templates
-  http.get(`${BASE_URL}/api/templates`, () => {
-    return HttpResponse.json({ data: mockTemplates });
+  // GET /user-profile - get user profile
+  http.get(`${BASE_URL}/user-profile`, () => {
+    return HttpResponse.json(mockUser);
   }),
 
-  // GET /api/user/profile - get user profile
-  http.get(`${BASE_URL}/api/user/profile`, () => {
-    return HttpResponse.json({ data: mockUser });
-  }),
-
-  // GET /api/user/settings - get user settings
-  http.get(`${BASE_URL}/api/user/settings`, () => {
-    return HttpResponse.json({ data: mockSettings });
+  // GET /user-settings - get user settings
+  http.get(`${BASE_URL}/user-settings`, () => {
+    return HttpResponse.json(mockSettings);
   }),
 ];

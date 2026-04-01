@@ -38,13 +38,9 @@ import {
 import { ToneSelector, AIReasoningCard, DraftEditor } from '@/components/draft';
 import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import {
-  mockClaims,
-  mockEvidence,
-  mockStrategy,
-  mockDraft,
-  mockTimelineEvents,
-} from '@/testing/fixtures';
+import { mockStrategy, mockDraft, mockTimelineEvents } from '@/testing/fixtures';
+import { useClaim } from '@/hooks/queries/useClaim';
+import { useEvidence } from '@/hooks/queries/useEvidence';
 import type { DraftTone } from '@/types';
 
 type TabKey = 'overview' | 'evidence' | 'timeline' | 'strategy' | 'drafts';
@@ -63,37 +59,35 @@ export default function ClaimDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
-  const [selectedTone, setSelectedTone] = useState<DraftTone>(mockDraft.tone);
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
+  const [selectedTone, setSelectedTone] = useState<DraftTone>('assertive');
   const [refreshing, setRefreshing] = useState(false);
 
-  const claim = mockClaims.find((c) => c.id === id) ?? mockClaims[0];
-  const claimEvidence = mockEvidence.filter((e) => e.claimId === claim.id);
+  const { data: claim, isLoading, isError, refetch } = useClaim(id);
+  const { data: claimEvidence = [] } = useEvidence(id);
+  // Strategy, draft, timeline — keep mocks until backend endpoints are built
   const strategy = mockStrategy;
   const draft = mockDraft;
   const timelineEvents = mockTimelineEvents;
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await refetch();
     setRefreshing(false);
-  }, []);
+  }, [refetch]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
+  const formattedDate = claim
+    ? new Date(claim.updatedAt).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : '';
 
-  const formattedDate = new Date(claim.updatedAt).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const strengthLabel = claim
+    ? (claim.strength >= 75 ? 'High' : claim.strength >= 50 ? 'Medium' : 'Low')
+    : 'Low';
 
-  const strengthLabel =
-    claim.strength >= 75 ? 'High' : claim.strength >= 50 ? 'Medium' : 'Low';
-
-  if (screenState === 'loading') {
+  if (isLoading || !claim) {
     return (
       <View style={styles.screen}>
         <ScrollView
@@ -115,13 +109,13 @@ export default function ClaimDetailScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (isError) {
     return (
       <View style={styles.screen}>
         <ErrorState
           title="Unable to load claim"
           description="We couldn't retrieve the claim details. Please try again."
-          onRetry={handleRetry}
+          onRetry={handleRefresh}
         />
       </View>
     );

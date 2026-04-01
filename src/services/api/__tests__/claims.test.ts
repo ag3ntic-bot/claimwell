@@ -67,7 +67,7 @@ describe('claims API service', () => {
         data: { data: mockClaims, total: mockClaims.length, page: 1, pageSize: 20, hasMore: false },
       });
       const result = await fetchClaims();
-      expect(mockGet).toHaveBeenCalledWith('/api/claims');
+      expect(mockGet).toHaveBeenCalledWith('/claims');
       expect(result).toEqual(mockClaims);
     });
 
@@ -122,7 +122,7 @@ describe('claims API service', () => {
       };
       mockPost.mockResolvedValueOnce({ data: { ...payload, id: 'clm_new', status: 'draft' } });
       const result = await createClaim(payload);
-      expect(mockPost).toHaveBeenCalledWith('/api/claims', payload);
+      expect(mockPost).toHaveBeenCalledWith('/claims', payload);
       expect(result.title).toBe('Test');
     });
   });

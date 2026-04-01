@@ -7,8 +7,14 @@ import { AI_TASK_CONFIG } from '@/types';
 // so we test the AIRouter behavior through a fresh instance approach.
 // Instead we'll test through the exported singleton after setting the provider.
 
-jest.mock('../providers/anthropic', () => ({
-  AnthropicProvider: jest.fn().mockImplementation(() => ({
+jest.mock('@/services/api/client', () => ({
+  USE_REAL_BACKEND: false,
+  apiClient: { post: jest.fn(), get: jest.fn() },
+  ApiError: class extends Error {},
+}));
+
+jest.mock('../providers/backend', () => ({
+  BackendAIProvider: jest.fn().mockImplementation(() => ({
     complete: jest.fn(),
   })),
 }));

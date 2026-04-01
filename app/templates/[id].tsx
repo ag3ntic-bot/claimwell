@@ -28,7 +28,7 @@ import {
 } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
 import { TEMPLATE_CATEGORY_META } from '@/types';
-import { mockTemplates } from '@/testing/fixtures';
+import { useTemplates } from '@/hooks/queries/useTemplates';
 
 type ScreenState = 'loading' | 'error' | 'ready';
 
@@ -36,11 +36,11 @@ export default function TemplateDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
+  const { data: templates = [], isLoading, isError } = useTemplates();
 
   const template = useMemo(
-    () => mockTemplates.find((t) => t.id === id),
-    [id],
+    () => templates.find((t) => t.id === id),
+    [templates, id],
   );
 
   const categoryMeta = template
@@ -59,12 +59,7 @@ export default function TemplateDetailScreen() {
     router.push('/(tabs)/new-claim/' as never);
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
+  if (isLoading) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ScrollView
@@ -81,13 +76,13 @@ export default function TemplateDetailScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (isError) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ErrorState
           title="Template unavailable"
           description="Unable to load this template. Please try again."
-          onRetry={handleRetry}
+          onRetry={() => {}}
         />
       </View>
     );

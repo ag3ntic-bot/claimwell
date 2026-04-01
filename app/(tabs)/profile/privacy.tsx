@@ -19,13 +19,11 @@ import { useRouter } from 'expo-router';
 
 import { Button, Icon, Card, ErrorState } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { mockSettings } from '@/testing/fixtures';
-
 export default function PrivacySettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [biometricLock, setBiometricLock] = useState(mockSettings.biometricLock);
+  const [biometricLock, setBiometricLock] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 

@@ -14,32 +14,38 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { GlassHeader, Avatar, Button, Icon, CardSkeleton, ErrorState } from '@/components/ui';
 import { ClaimCard, ActionNeededCard } from '@/components/claim';
 import { StatsGrid, StrategyInsightCard } from '@/components/dashboard';
 import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography } from '@/theme';
-import { mockClaimSummary, mockClaims, mockUser } from '@/testing/fixtures';
+import { useAuth } from '@/hooks/useAuth';
+import { useClaims, useClaimSummary } from '@/hooks/queries/useClaims';
 import type { Claim } from '@/types';
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { data: claims = [], isLoading: claimsLoading, isError: claimsError } = useClaims();
+  const { data: claimSummary } = useClaimSummary();
+
   const [refreshing, setRefreshing] = useState(false);
 
-  const activeClaims = mockClaims.filter(
+  const activeClaims = claims.filter(
     (c) => c.status !== 'resolved' && c.status !== 'archived',
   );
 
+  const userName = user?.name ?? 'User';
+  const summary = claimSummary ?? { activeClaims: 0, moneyAtStake: 0, totalRecovered: 0 };
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate refresh
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await queryClient.invalidateQueries({ queryKey: ['claims'] });
     setRefreshing(false);
-  }, []);
+  }, [queryClient]);
 
   const handleClaimPress = useCallback(
     (claim: Claim) => {
@@ -56,12 +62,7 @@ export default function HomeScreen() {
     router.push('/strategy');
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
+  if (claimsLoading) {
     return (
       <View style={styles.screen}>
         <GlassHeader title="Claimwell" />
@@ -86,14 +87,14 @@ export default function HomeScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (claimsError) {
     return (
       <View style={styles.screen}>
         <GlassHeader title="Claimwell" />
         <ErrorState
           title="Unable to load dashboard"
           description="We couldn't fetch your latest claim data. Please check your connection and try again."
-          onRetry={handleRetry}
+          onRetry={handleRefresh}
         />
       </View>
     );
@@ -105,11 +106,11 @@ export default function HomeScreen() {
         title="Claimwell"
         left={
           <Avatar
-            name={mockUser.name}
-            uri={mockUser.avatarUri ?? undefined}
+            name={userName}
+            uri={user?.avatarUri ?? undefined}
             size="sm"
-            showProBadge={mockUser.subscriptionTier === 'pro'}
-            accessibilityLabel={`${mockUser.name} profile`}
+            showProBadge={user?.subscriptionTier === 'pro'}
+            accessibilityLabel={`${userName} profile`}
           />
         }
         right={
@@ -137,7 +138,7 @@ export default function HomeScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Text style={styles.heroHeading}>
-            Welcome back, {mockUser.name.split(' ')[0]}
+            Welcome back, {userName.split(' ')[0]}
           </Text>
           <Text style={styles.heroDescription}>
             Track your active claims, review AI-powered strategies, and take the
@@ -155,27 +156,23 @@ export default function HomeScreen() {
 
         {/* Stats Grid */}
         <View style={styles.section}>
-          <StatsGrid summary={mockClaimSummary} />
+          <StatsGrid summary={summary} />
         </View>
 
         {/* Actions Needed Today */}
-        <View style={styles.section}>
-          <SectionHeader title="Actions Needed Today" />
-          <View style={styles.actionsContainer}>
-            <ActionNeededCard
-              title="Appeal Deadline Approaching"
-              description="iPhone 15 Pro Max claim -- 12 days left to submit your formal appeal."
-              variant="error"
-              onPress={() => handleClaimPress(mockClaims[0])}
-            />
-            <ActionNeededCard
-              title="Review AI Draft"
-              description="Your appeal letter for case #APL-99283 is ready for review and sending."
-              variant="primary"
-              onPress={() => handleClaimPress(mockClaims[0])}
-            />
+        {activeClaims.length > 0 && (
+          <View style={styles.section}>
+            <SectionHeader title="Actions Needed Today" />
+            <View style={styles.actionsContainer}>
+              <ActionNeededCard
+                title="Review Your Claims"
+                description={`You have ${activeClaims.length} active claim${activeClaims.length > 1 ? 's' : ''} that may need attention.`}
+                variant="primary"
+                onPress={() => handleClaimPress(activeClaims[0])}
+              />
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Active Claims */}
         <View style={styles.section}>
@@ -185,22 +182,28 @@ export default function HomeScreen() {
             onAction={() => router.push('/claims')}
           />
           <View style={styles.claimsList}>
-            {activeClaims.slice(0, 3).map((claim) => (
-              <View key={claim.id} style={styles.claimCardWrapper}>
-                <ClaimCard claim={claim} onPress={handleClaimPress} />
-              </View>
-            ))}
+            {activeClaims.length === 0 ? (
+              <Text style={styles.emptyText}>No active claims yet. Start a new claim to get going.</Text>
+            ) : (
+              activeClaims.slice(0, 3).map((claim) => (
+                <View key={claim.id} style={styles.claimCardWrapper}>
+                  <ClaimCard claim={claim} onPress={handleClaimPress} />
+                </View>
+              ))
+            )}
           </View>
         </View>
 
         {/* Strategy Insight */}
-        <View style={styles.section}>
-          <StrategyInsightCard
-            title="AI Strategy Available"
-            description="Your iPhone warranty claim has a 76% win probability. A formal appeal letter has been drafted and is ready for review."
-            onPress={handleStrategyPress}
-          />
-        </View>
+        {activeClaims.length > 0 && (
+          <View style={styles.section}>
+            <StrategyInsightCard
+              title="AI Strategy Available"
+              description="Tap to generate AI-powered strategies for your active claims."
+              onPress={handleStrategyPress}
+            />
+          </View>
+        )}
 
         {/* Bottom padding */}
         <View style={styles.bottomSpacer} />
@@ -254,5 +257,11 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: spacing[12],
+  },
+  emptyText: {
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
+    textAlign: 'center',
+    paddingVertical: spacing[8],
   },
 });

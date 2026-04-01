@@ -3,8 +3,14 @@ import { aiRouter } from '../../router';
 import { summarizeEvidence } from '../summarize';
 import type { AISummary } from '@/types';
 
-jest.mock('../../providers/anthropic', () => ({
-  AnthropicProvider: jest.fn(),
+jest.mock('@/services/api/client', () => ({
+  USE_REAL_BACKEND: false,
+  apiClient: { post: jest.fn(), get: jest.fn() },
+  ApiError: class extends Error {},
+}));
+
+jest.mock('../../providers/backend', () => ({
+  BackendAIProvider: jest.fn(),
 }));
 
 describe('summarizeEvidence', () => {

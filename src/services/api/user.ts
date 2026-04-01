@@ -4,7 +4,7 @@ import { apiClient, ApiError } from './client';
 
 export async function fetchProfile(): Promise<User> {
   try {
-    const response = await apiClient.get<User>('/api/user/profile');
+    const response = await apiClient.get<User>('/user-profile');
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -17,7 +17,7 @@ export async function fetchProfile(): Promise<User> {
 
 export async function updateProfile(data: Partial<User>): Promise<User> {
   try {
-    const response = await apiClient.patch<User>('/api/user/profile', data);
+    const response = await apiClient.patch<User>('/user-profile', data);
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -30,7 +30,7 @@ export async function updateProfile(data: Partial<User>): Promise<User> {
 
 export async function fetchSettings(): Promise<AppSettings> {
   try {
-    const response = await apiClient.get<AppSettings>('/api/user/settings');
+    const response = await apiClient.get<AppSettings>('/user-settings');
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -43,7 +43,7 @@ export async function fetchSettings(): Promise<AppSettings> {
 
 export async function updateSettings(data: Partial<AppSettings>): Promise<AppSettings> {
   try {
-    const response = await apiClient.patch<AppSettings>('/api/user/settings', data);
+    const response = await apiClient.patch<AppSettings>('/user-settings', data);
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);

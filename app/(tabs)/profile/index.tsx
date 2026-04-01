@@ -26,7 +26,7 @@ import {
 } from '@/components/ui';
 import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { mockUser } from '@/testing/fixtures';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores';
 
 type ScreenState = 'loading' | 'error' | 'ready';
@@ -53,6 +53,7 @@ const DATA_ITEMS: SettingsItem[] = [
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const logout = useAuthStore((s) => s.logout);
   const [screenState, setScreenState] = useState<ScreenState>('ready');
 
@@ -118,7 +119,7 @@ export default function ProfileScreen() {
     );
   }
 
-  const isPro = mockUser.subscriptionTier === 'pro';
+  const isPro = user?.subscriptionTier === 'pro';
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -131,15 +132,15 @@ export default function ProfileScreen() {
         <View style={styles.profileHero}>
           <View style={styles.avatarContainer}>
             <Avatar
-              name={mockUser.name}
-              uri={mockUser.avatarUri ?? undefined}
+              name={user?.name ?? 'User'}
+              uri={user?.avatarUri ?? undefined}
               size="xl"
               showProBadge={isPro}
-              accessibilityLabel={`${mockUser.name} profile picture`}
+              accessibilityLabel={`${user?.name ?? 'User'} profile picture`}
             />
           </View>
-          <Text style={styles.userName}>{mockUser.name}</Text>
-          <Text style={styles.userEmail}>{mockUser.email}</Text>
+          <Text style={styles.userName}>{user?.name ?? 'User'}</Text>
+          <Text style={styles.userEmail}>{user?.email ?? ''}</Text>
           {isPro && (
             <Badge
               label="Pro Member"

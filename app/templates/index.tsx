@@ -29,7 +29,7 @@ import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
 import { TEMPLATE_CATEGORY_META } from '@/types';
 import type { TemplateCategory } from '@/types';
-import { mockTemplates } from '@/testing/fixtures';
+import { useTemplates } from '@/hooks/queries/useTemplates';
 
 type ScreenState = 'loading' | 'error' | 'ready';
 
@@ -38,13 +38,12 @@ const REFUND_TAGS = ['Airlines', 'Uber', 'Retail'];
 export default function TemplateLibraryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
+  const { data: templates = [], isLoading, isError, refetch } = useTemplates();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleCategoryPress = useCallback(
     (category: TemplateCategory) => {
-      // Navigate to first template in that category
-      const template = mockTemplates.find((t) => t.category === category);
+      const template = templates.find((t) => t.category === category);
       if (template) {
         router.push(`/templates/${template.id}`);
       }
@@ -54,7 +53,7 @@ export default function TemplateLibraryScreen() {
 
   const handleSearchSubmit = useCallback(() => {
     if (!searchQuery.trim()) return;
-    const match = mockTemplates.find(
+    const match = templates.find(
       (t) =>
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
@@ -68,12 +67,7 @@ export default function TemplateLibraryScreen() {
     router.back();
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
+  if (isLoading) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ScrollView
@@ -91,13 +85,13 @@ export default function TemplateLibraryScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (isError) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ErrorState
           title="Templates unavailable"
           description="Unable to load the template library. Please try again."
-          onRetry={handleRetry}
+          onRetry={() => refetch()}
         />
       </View>
     );

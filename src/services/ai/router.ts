@@ -2,7 +2,8 @@ import type { AITask, AIInput, AIOutput, AITier } from '@/types';
 import { AI_TASK_CONFIG } from '@/types';
 import type { AIProvider } from './providers/types';
 import { MockAIProvider } from './providers/mock';
-import { AnthropicProvider } from './providers/anthropic';
+import { BackendAIProvider } from './providers/backend';
+import { USE_REAL_BACKEND } from '@/services/api/client';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -91,7 +92,7 @@ class AIRouter {
   private observers: AIObserver[] = [];
 
   constructor() {
-    this.provider = __DEV__ ? new MockAIProvider() : new AnthropicProvider();
+    this.provider = (__DEV__ && !USE_REAL_BACKEND) ? new MockAIProvider() : new BackendAIProvider();
   }
 
   // ── Provider management ──────────────────────────────────────────────────

@@ -18,7 +18,7 @@ import { useRouter } from 'expo-router';
 
 import { Badge, Button, Card, Icon, ErrorState, CardSkeleton } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { mockUser } from '@/testing/fixtures';
+import { useAuth } from '@/hooks/useAuth';
 
 type ScreenState = 'loading' | 'error' | 'ready';
 
@@ -35,9 +35,10 @@ const PRO_FEATURES = [
 export default function SubscriptionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [screenState, setScreenState] = useState<ScreenState>('ready');
 
-  const isPro = mockUser.subscriptionTier === 'pro';
+  const isPro = user?.subscriptionTier === 'pro';
 
   const handleBack = useCallback(() => {
     router.back();

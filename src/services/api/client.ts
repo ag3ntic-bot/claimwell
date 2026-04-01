@@ -1,7 +1,16 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { secureStorage } from '@/services/storage/secure';
 
-const BASE_URL = __DEV__ ? 'http://localhost:3000' : 'https://api.claimwell.app';
+// ---------------------------------------------------------------------------
+// Backend mode toggle
+// Set to true to use real Supabase backend, false for local mock data fallback.
+// In production this is always true.
+// ---------------------------------------------------------------------------
+export const USE_REAL_BACKEND = true;
+
+const SUPABASE_URL = 'https://ygblbpfkteqqfbzfhbgb.supabase.co/functions/v1';
+const LOCAL_URL = 'http://localhost:54321/functions/v1';
+const BASE_URL = __DEV__ ? (USE_REAL_BACKEND ? SUPABASE_URL : LOCAL_URL) : SUPABASE_URL;
 
 // ---------------------------------------------------------------------------
 // Typed API Error

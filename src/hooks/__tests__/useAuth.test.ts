@@ -119,7 +119,7 @@ describe('useAuth', () => {
       await result.current.login('alex@test.com', 'password123');
     });
 
-    expect(mockApiPost).toHaveBeenCalledWith('/api/auth/login', {
+    expect(mockApiPost).toHaveBeenCalledWith('/auth-login', {
       email: 'alex@test.com',
       password: 'password123',
     });

@@ -30,7 +30,7 @@ import {
 } from '@/components/ui';
 import { MetricBlock } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { mockClaims } from '@/testing/fixtures';
+import { useClaim } from '@/hooks/queries/useClaim';
 import { formatCurrency, formatAbsoluteDate } from '@/utils';
 
 type ScreenState = 'loading' | 'error' | 'ready';
@@ -64,10 +64,9 @@ export default function ResolvedClaimScreen() {
     return () => animation.stop();
   }, [pulseAnim]);
 
-  const claim = useMemo(
-    () => mockClaims.find((c) => c.id === id) ?? mockClaims.find((c) => c.status === 'resolved') ?? mockClaims[0],
-    [id],
-  );
+  const { data: claim } = useClaim(id);
+
+  if (!claim) return null;
 
   const resolvedAmount = claim.amountRecovered ?? claim.amountClaimed;
 

@@ -4,7 +4,7 @@ import { apiClient, ApiError } from './client';
 
 export async function fetchTemplates(): Promise<Template[]> {
   try {
-    const response = await apiClient.get<Template[]>('/api/templates');
+    const response = await apiClient.get<Template[]>('/templates');
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -17,7 +17,7 @@ export async function fetchTemplates(): Promise<Template[]> {
 
 export async function fetchTemplate(id: string): Promise<Template> {
   try {
-    const response = await apiClient.get<Template>(`/api/templates/${id}`);
+    const response = await apiClient.get<Template>('/templates', { params: { id } });
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -32,7 +32,7 @@ export async function fetchTemplate(id: string): Promise<Template> {
 
 export async function searchTemplates(query: string): Promise<Template[]> {
   try {
-    const response = await apiClient.get<Template[]>('/api/templates/search', {
+    const response = await apiClient.get<Template[]>('/templates-search', {
       params: { q: query },
     });
     return response.data;

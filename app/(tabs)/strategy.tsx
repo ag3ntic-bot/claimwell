@@ -26,25 +26,25 @@ import {
   CardSkeleton,
 } from '@/components/ui';
 import { colors, spacing, typography, radii } from '@/theme';
-import { mockClaims, mockStrategy } from '@/testing/fixtures';
+import { useClaims } from '@/hooks/queries/useClaims';
 import type { Claim } from '@/types';
 
 type ScreenState = 'loading' | 'error' | 'ready';
 
 export default function StrategyHubScreen() {
   const router = useRouter();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
   const [refreshing, setRefreshing] = useState(false);
+  const { data: allClaims = [], isLoading, isError, refetch } = useClaims();
 
-  const activeClaims = mockClaims.filter(
+  const activeClaims = allClaims.filter(
     (c) => c.status !== 'resolved' && c.status !== 'archived',
   );
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await refetch();
     setRefreshing(false);
-  }, []);
+  }, [refetch]);
 
   const handleClaimStrategy = useCallback(
     (claim: Claim) => {
@@ -54,11 +54,10 @@ export default function StrategyHubScreen() {
   );
 
   const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
+    refetch();
+  }, [refetch]);
 
-  if (screenState === 'loading') {
+  if (isLoading) {
     return (
       <View style={styles.screen}>
         <ScrollView
@@ -79,7 +78,7 @@ export default function StrategyHubScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (isError) {
     return (
       <View style={styles.screen}>
         <View style={styles.errorHeaderSection}>
@@ -128,7 +127,7 @@ export default function StrategyHubScreen() {
           />
         ) : (
           <View style={styles.strategiesList}>
-            {activeClaims.map((claim) => {
+            {activeClaims.map((claim, index) => {
               const strengthLabel =
                 claim.strength >= 75
                   ? 'High'
@@ -144,9 +143,9 @@ export default function StrategyHubScreen() {
 
               // For the first claim we have real strategy data;
               // for others, derive a plausible recommendation
-              const isMainClaim = claim.id === mockStrategy.claimId;
+              const isMainClaim = index === 0;
               const recommendedAction = isMainClaim
-                ? mockStrategy.recommendedAction
+                ? 'AI strategy available — tap to view'
                 : claim.status === 'submitted'
                   ? 'Follow up with company support'
                   : claim.status === 'reviewing'
@@ -215,9 +214,9 @@ export default function StrategyHubScreen() {
                     </View>
 
                     {/* Days left badge (if applicable) */}
-                    {isMainClaim && mockStrategy.daysLeftToAppeal != null && (
+                    {isMainClaim && claim.status === 'appealing' && (
                       <Badge
-                        label={`${mockStrategy.daysLeftToAppeal} days left to appeal`}
+                        label="Appeal in progress"
                         variant="tertiary"
                         icon="schedule"
                         style={styles.deadlineBadge}

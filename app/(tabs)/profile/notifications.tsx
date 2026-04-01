@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router';
 
 import { Icon, Card, ErrorState } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { mockSettings } from '@/testing/fixtures';
+import { fetchSettings } from '@/services/api/user';
 
 interface ToggleItem {
   id: string;
@@ -66,8 +66,8 @@ export default function NotificationsSettingsScreen() {
   const insets = useSafeAreaInsets();
 
   const [toggles, setToggles] = useState<Record<string, boolean>>({
-    push: mockSettings.notifications,
-    email: mockSettings.emailNotifications,
+    push: true,
+    email: true,
     deadlines: true,
     ai_insights: true,
     resolved: true,

@@ -26,7 +26,7 @@ import {
 } from '@/components/ui';
 import { ClaimCard } from '@/components/claim';
 import { colors, spacing, typography, shadows } from '@/theme';
-import { mockClaims } from '@/testing/fixtures';
+import { useClaims } from '@/hooks/queries/useClaims';
 import type { Claim, ClaimStatus } from '@/types';
 
 type FilterKey = 'all' | 'active' | 'reviewing' | 'resolved';
@@ -51,19 +51,17 @@ export default function ClaimsListScreen() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
   const [refreshing, setRefreshing] = useState(false);
+  const { data: allClaims = [], isLoading, isError, refetch } = useClaims();
 
   const filteredClaims = useMemo(() => {
-    let claims = mockClaims;
+    let claims = allClaims;
 
-    // Apply status filter
     const allowedStatuses = STATUS_GROUPS[activeFilter];
     if (allowedStatuses) {
       claims = claims.filter((c) => allowedStatuses.includes(c.status));
     }
 
-    // Apply search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       claims = claims.filter(
@@ -75,7 +73,7 @@ export default function ClaimsListScreen() {
     }
 
     return claims;
-  }, [activeFilter, searchQuery]);
+  }, [allClaims, activeFilter, searchQuery]);
 
   const handleClaimPress = useCallback(
     (claim: Claim) => {
@@ -90,16 +88,11 @@ export default function ClaimsListScreen() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await refetch();
     setRefreshing(false);
-  }, []);
+  }, [refetch]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
+  if (isLoading) {
     return (
       <View style={styles.screen}>
         <View style={styles.headerContainer}>
@@ -120,7 +113,7 @@ export default function ClaimsListScreen() {
     );
   }
 
-  if (screenState === 'error') {
+  if (isError) {
     return (
       <View style={styles.screen}>
         <View style={styles.headerContainer}>
@@ -129,7 +122,7 @@ export default function ClaimsListScreen() {
         <ErrorState
           title="Unable to load claims"
           description="We couldn't retrieve your claims. Please check your connection and try again."
-          onRetry={handleRetry}
+          onRetry={handleRefresh}
         />
       </View>
     );

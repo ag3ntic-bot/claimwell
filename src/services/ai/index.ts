@@ -3,7 +3,7 @@ export type { AIObserver } from './router';
 export type { AIProvider } from './providers/types';
 export { MockAIProvider } from './providers/mock';
 export type { MockAIProviderOptions } from './providers/mock';
-export { AnthropicProvider } from './providers/anthropic';
+export { BackendAIProvider } from './providers/backend';
 
 export { summarizeEvidence } from './tasks/summarize';
 export { extractFromDocument } from './tasks/extract';

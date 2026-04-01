@@ -5,7 +5,7 @@ import type { CreateClaimRequest, UpdateClaimRequest, PaginatedResponse } from '
 
 export async function fetchClaims(): Promise<Claim[]> {
   try {
-    const response = await apiClient.get<PaginatedResponse<Claim>>('/api/claims');
+    const response = await apiClient.get<PaginatedResponse<Claim>>('/claims');
     return response.data.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -18,7 +18,7 @@ export async function fetchClaims(): Promise<Claim[]> {
 
 export async function fetchClaim(id: string): Promise<Claim> {
   try {
-    const response = await apiClient.get<Claim>(`/api/claims/${id}`);
+    const response = await apiClient.get<Claim>('/claims-by-id', { params: { id } });
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -33,7 +33,7 @@ export async function fetchClaim(id: string): Promise<Claim> {
 
 export async function createClaim(data: CreateClaimRequest): Promise<Claim> {
   try {
-    const response = await apiClient.post<Claim>('/api/claims', data);
+    const response = await apiClient.post<Claim>('/claims', data);
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -66,7 +66,7 @@ export async function createClaim(data: CreateClaimRequest): Promise<Claim> {
 
 export async function updateClaim(id: string, data: UpdateClaimRequest): Promise<Claim> {
   try {
-    const response = await apiClient.patch<Claim>(`/api/claims/${id}`, data);
+    const response = await apiClient.patch<Claim>('/claims-by-id', data, { params: { id } });
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
@@ -81,7 +81,7 @@ export async function updateClaim(id: string, data: UpdateClaimRequest): Promise
 
 export async function fetchClaimSummary(): Promise<ClaimSummary> {
   try {
-    const response = await apiClient.get<ClaimSummary>('/api/claims/summary');
+    const response = await apiClient.get<ClaimSummary>('/claims-summary');
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);

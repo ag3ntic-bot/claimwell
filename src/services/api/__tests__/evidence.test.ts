@@ -59,7 +59,7 @@ describe('evidence API', () => {
   it('fetchEvidence returns data', async () => {
     mockGet.mockResolvedValueOnce({ data: mockEvidence });
     const result = await fetchEvidence('clm_01');
-    expect(mockGet).toHaveBeenCalledWith('/api/claims/clm_01/evidence');
+    expect(mockGet).toHaveBeenCalledWith('/claims-evidence', { params: { claimId: 'clm_01' } });
     expect(result).toEqual(mockEvidence);
   });
 
@@ -89,6 +89,6 @@ describe('evidence API', () => {
   it('deleteEvidence calls endpoint', async () => {
     mockDelete.mockResolvedValueOnce({ data: undefined });
     await deleteEvidence('ev_01');
-    expect(mockDelete).toHaveBeenCalledWith('/api/evidence/ev_01');
+    expect(mockDelete).toHaveBeenCalledWith('/evidence-delete', { params: { id: 'ev_01' } });
   });
 });

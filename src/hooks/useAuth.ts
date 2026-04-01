@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 import { secureStorage } from '@/services/storage/secure';
 import { fetchProfile } from '@/services/api/user';
-import { apiClient } from '@/services/api/client';
+import { apiClient, USE_REAL_BACKEND } from '@/services/api/client';
 
 export function useAuth() {
   const { isAuthenticated, user, setUser, setToken, logout: storeLogout } = useAuthStore();
@@ -33,7 +33,7 @@ export function useAuth() {
       setIsLoading(true);
       try {
         const response = await apiClient.post<{ token: string; refreshToken: string }>(
-          '/api/auth/login',
+          '/auth-login',
           { email, password },
         );
 
@@ -44,8 +44,8 @@ export function useAuth() {
         const profile = await fetchProfile();
         setUser(profile);
       } catch (error) {
-        // In dev mode, use mock data for login
-        if (__DEV__) {
+        // In dev mode with mock backend, use mock data for login
+        if (__DEV__ && !USE_REAL_BACKEND) {
           await setToken('mock-dev-token');
           const profile = await fetchProfile();
           setUser(profile);
@@ -62,7 +62,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      await apiClient.post('/api/auth/logout').catch(() => {
+      await apiClient.post('/auth-logout').catch(() => {
         // Best-effort server logout
       });
     } finally {
