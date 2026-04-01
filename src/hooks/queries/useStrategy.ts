@@ -4,7 +4,16 @@ import { generateStrategy } from '@/services/ai/tasks/generate-strategy';
 import { useClaim } from './useClaim';
 import { useEvidence } from './useEvidence';
 
-export function useStrategy(claimId: string | null | undefined) {
+interface UseStrategyOptions {
+  /** External gate — query only runs when true. Defaults to true. */
+  enabled?: boolean;
+}
+
+export function useStrategy(
+  claimId: string | null | undefined,
+  options: UseStrategyOptions = {},
+) {
+  const { enabled: externalEnabled = true } = options;
   const { data: claim } = useClaim(claimId);
   const { data: evidence } = useEvidence(claimId);
 
@@ -28,7 +37,8 @@ export function useStrategy(claimId: string | null | undefined) {
 
       return generateStrategy(claimDetails, context);
     },
-    enabled: !!claim && !!evidence,
+    enabled: !!claim && !!evidence && externalEnabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false, // AIRouter handles retries; don't add another layer
   });
 }

@@ -7,12 +7,10 @@
 
 import React from 'react';
 import {
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
-  ListRenderItemInfo,
 } from 'react-native';
 import { CardSkeleton, Icon } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
@@ -62,31 +60,21 @@ export const EvidenceGrid: React.FC<EvidenceGridProps> = ({
     );
   }
 
-  const renderItem = ({ item }: ListRenderItemInfo<Evidence>) => (
-    <View style={styles.gridItem}>
-      <EvidenceCard evidence={item} onPress={onEvidencePress} />
-    </View>
-  );
-
-  const renderHeader = () => (
-    <View style={styles.gridItem}>
-      <UploadPlaceholder onPress={onUploadPress} />
-    </View>
-  );
-
   return (
-    <FlatList
-      data={evidence}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      numColumns={COLUMN_COUNT}
-      ListHeaderComponent={renderHeader}
-      columnWrapperStyle={styles.row}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-      accessibilityRole="list"
-      accessibilityLabel="Evidence items"
-    />
+    <View style={styles.container} accessibilityRole="list" accessibilityLabel="Evidence items">
+      <View style={styles.gridWrap}>
+        {/* Upload Placeholder */}
+        <View style={styles.gridItem}>
+          <UploadPlaceholder onPress={onUploadPress} />
+        </View>
+        {/* Evidence cards */}
+        {evidence.map((item) => (
+          <View key={item.id} style={styles.gridItem}>
+            <EvidenceCard evidence={item} onPress={onEvidencePress} />
+          </View>
+        ))}
+      </View>
+    </View>
   );
 };
 
@@ -94,11 +82,14 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: spacing[4],
   },
-  row: {
+  gridWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing[3],
   },
   gridItem: {
-    flex: 1,
+    flexBasis: '48%',
+    flexGrow: 1,
     marginBottom: spacing[3],
   },
   skeletonGrid: {

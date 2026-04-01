@@ -68,7 +68,8 @@ export default function ClaimDetailScreen() {
 
   const { data: claim, isLoading, isError, refetch } = useClaim(id);
   const { data: claimEvidence = [] } = useEvidence(id);
-  const { data: strategyData } = useStrategy(id);
+  const strategyEnabled = activeTab === 'overview' || activeTab === 'strategy';
+  const { data: strategyData } = useStrategy(id, { enabled: strategyEnabled });
   const strategy = strategyData ?? null;
   const generateDraft = useGenerateDraft();
   const uploadEvidence = useUploadEvidence(id ?? '');

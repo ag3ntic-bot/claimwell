@@ -31,6 +31,7 @@ const ICON_MAP: Record<string, string> = {
   add: 'plus',
   add_circle: 'plus-circle',
   edit: 'pencil',
+  edit_note: 'note-edit-outline',
   delete: 'delete',
   search: 'magnify',
   filter_list: 'filter-variant',

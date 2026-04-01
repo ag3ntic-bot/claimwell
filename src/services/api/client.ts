@@ -175,6 +175,12 @@ interface RetryConfig extends InternalAxiosRequestConfig {
 }
 
 function shouldRetry(error: AxiosError): boolean {
+  // AI endpoints have their own retry logic in AIRouter �� never retry at Axios level
+  const url = error.config?.url ?? '';
+  if (url.startsWith('/ai-')) {
+    return false;
+  }
+
   // Never retry on 4xx
   if (error.response && error.response.status >= 400 && error.response.status < 500) {
     return false;

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, View, ListRenderItemInfo } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ListItemSkeleton } from '@/components/ui';
 import { spacing } from '@/theme';
 import { TimelineEvent } from '@/types';
@@ -32,24 +32,17 @@ export const TimelineList: React.FC<TimelineListProps> = ({
     );
   }
 
-  const renderItem = ({ item, index }: ListRenderItemInfo<TimelineEvent>) => (
-    <TimelineItem
-      event={item}
-      isFirst={index === 0}
-      isLast={index === events.length - 1}
-    />
-  );
-
   return (
-    <FlatList
-      data={events}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.list}
-      showsVerticalScrollIndicator={false}
-      accessibilityRole="list"
-      accessibilityLabel="Claim timeline"
-    />
+    <View style={styles.list} accessibilityRole="list" accessibilityLabel="Claim timeline">
+      {events.map((event, index) => (
+        <TimelineItem
+          key={event.id}
+          event={event}
+          isFirst={index === 0}
+          isLast={index === events.length - 1}
+        />
+      ))}
+    </View>
   );
 };
 
