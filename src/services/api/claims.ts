@@ -1,6 +1,6 @@
 import type { Claim, ClaimSummary } from '@/types';
 import { mockClaims, mockClaimSummary } from '@/testing/fixtures';
-import { apiClient, ApiError } from './client';
+import { apiClient, ApiError, USE_REAL_BACKEND } from './client';
 import type { CreateClaimRequest, UpdateClaimRequest, PaginatedResponse } from './types';
 
 export async function fetchClaims(): Promise<Claim[]> {
@@ -9,7 +9,7 @@ export async function fetchClaims(): Promise<Claim[]> {
     return response.data.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return mockClaims;
     }
     throw apiError;
@@ -22,7 +22,7 @@ export async function fetchClaim(id: string): Promise<Claim> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       const claim = mockClaims.find((c) => c.id === id);
       if (!claim) throw new ApiError({ message: `Claim ${id} not found`, code: 'NOT_FOUND', statusCode: 404 });
       return claim;
@@ -37,7 +37,7 @@ export async function createClaim(data: CreateClaimRequest): Promise<Claim> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       const newClaim: Claim = {
         id: `clm_${Date.now()}`,
         userId: 'usr_01',
@@ -70,7 +70,7 @@ export async function updateClaim(id: string, data: UpdateClaimRequest): Promise
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       const existing = mockClaims.find((c) => c.id === id);
       if (!existing) throw new ApiError({ message: `Claim ${id} not found`, code: 'NOT_FOUND', statusCode: 404 });
       return { ...existing, ...data, updatedAt: new Date().toISOString() } as Claim;
@@ -85,7 +85,7 @@ export async function fetchClaimSummary(): Promise<ClaimSummary> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return mockClaimSummary;
     }
     throw apiError;

@@ -1,5 +1,5 @@
 import type { TimelineEvent } from '@/types';
-import { apiClient, ApiError } from './client';
+import { apiClient, ApiError, USE_REAL_BACKEND } from './client';
 
 export async function fetchTimeline(claimId: string): Promise<TimelineEvent[]> {
   try {
@@ -9,7 +9,7 @@ export async function fetchTimeline(claimId: string): Promise<TimelineEvent[]> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return [];
     }
     throw apiError;

@@ -1,6 +1,6 @@
 import type { Evidence } from '@/types';
 import { mockEvidence } from '@/testing/fixtures';
-import { apiClient, ApiError } from './client';
+import { apiClient, ApiError, USE_REAL_BACKEND } from './client';
 import type { UploadEvidenceRequest } from './types';
 
 export async function fetchEvidence(claimId: string): Promise<Evidence[]> {
@@ -11,7 +11,7 @@ export async function fetchEvidence(claimId: string): Promise<Evidence[]> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return mockEvidence.filter((e) => e.claimId === claimId);
     }
     throw apiError;
@@ -38,7 +38,7 @@ export async function uploadEvidence(
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       const newEvidence: Evidence = {
         id: `ev_${Date.now()}`,
         claimId,
@@ -65,7 +65,7 @@ export async function deleteEvidence(id: string): Promise<void> {
     await apiClient.delete('/evidence-delete', { params: { id } });
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return;
     }
     throw apiError;

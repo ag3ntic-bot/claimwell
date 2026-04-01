@@ -31,9 +31,10 @@ describe('EvidenceCard', () => {
     expect(screen.getByText('Missing Info')).toBeTruthy();
   });
 
-  it('renders key_evidence flag', () => {
+  it('renders key_evidence flag and badge overlay', () => {
     render(<EvidenceCard evidence={photoEvidence} />);
-    expect(screen.getByText('Key Evidence')).toBeTruthy();
+    // Badge overlay + chip both render "Key Evidence"
+    expect(screen.getAllByText('Key Evidence').length).toBeGreaterThanOrEqual(2);
   });
 
   it('renders AI Summary button for items with summary', () => {
@@ -57,6 +58,19 @@ describe('EvidenceCard', () => {
     fireEvent.press(screen.getByLabelText(/Evidence: Apple Store Purchase Receipt/));
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onPress).toHaveBeenCalledWith(receiptEvidence);
+  });
+
+  it('renders extracted data for receipts', () => {
+    render(<EvidenceCard evidence={receiptEvidence} />);
+    expect(screen.getByText('Amount')).toBeTruthy();
+    expect(screen.getByText('$1,199')).toBeTruthy();
+    expect(screen.getByText('Purchase Date')).toBeTruthy();
+  });
+
+  it('renders conflict note for contradiction flags', () => {
+    render(<EvidenceCard evidence={chatLogEvidence} />);
+    // Conflict note shows a truncated excerpt of the AI summary
+    expect(screen.getByText(/Chat transcript from October 28/)).toBeTruthy();
   });
 
   it('has correct accessibility label', () => {

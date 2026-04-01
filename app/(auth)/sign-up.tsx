@@ -2,7 +2,7 @@
  * Sign Up Screen
  *
  * Account creation form with name, email, and password fields.
- * Mock sign-up that auto-succeeds in dev mode.
+ * Calls real Supabase auth-signup when USE_REAL_BACKEND is enabled.
  */
 
 import React, { useState } from 'react';
@@ -21,6 +21,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '@/theme';
 import { Input, Button } from '@/components/ui';
 import { useAuthStore } from '@/stores';
+import { apiClient, USE_REAL_BACKEND } from '@/services/api/client';
+import { secureStorage } from '@/services/storage/secure';
+import { fetchProfile } from '@/services/api/user';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -46,8 +49,8 @@ export default function SignUpScreen() {
 
     setIsLoading(true);
     try {
-      // Mock sign-up: auto-succeed in dev mode
-      if (__DEV__) {
+      if (__DEV__ && !USE_REAL_BACKEND) {
+        // Mock sign-up only when real backend is disabled
         await setToken('mock-dev-token');
         setUser({
           id: 'user-1',
@@ -61,14 +64,31 @@ export default function SignUpScreen() {
         return;
       }
 
-      // Production sign-up would call the API here
-      Alert.alert('Success', 'Account created successfully!');
+      const response = await apiClient.post<{
+        token: string;
+        refreshToken?: string;
+        message?: string;
+      }>('/auth-signup', { email, password, name });
+
+      const { token, refreshToken, message } = response.data;
+
+      if (!token && message) {
+        // Email confirmation required
+        Alert.alert('Check your email', message);
+        return;
+      }
+
+      await setToken(token);
+      if (refreshToken) {
+        await secureStorage.setRefreshToken(refreshToken);
+      }
+
+      const profile = await fetchProfile();
+      setUser(profile);
       router.replace('/(tabs)');
-    } catch {
-      Alert.alert(
-        'Sign up failed',
-        'Something went wrong. Please try again.',
-      );
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Something went wrong.';
+      Alert.alert('Sign up failed', msg);
     } finally {
       setIsLoading(false);
     }

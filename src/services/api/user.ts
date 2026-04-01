@@ -1,6 +1,6 @@
 import type { User, AppSettings } from '@/types';
 import { mockUser, mockSettings } from '@/testing/fixtures';
-import { apiClient, ApiError } from './client';
+import { apiClient, ApiError, USE_REAL_BACKEND } from './client';
 
 export async function fetchProfile(): Promise<User> {
   try {
@@ -8,7 +8,7 @@ export async function fetchProfile(): Promise<User> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return mockUser;
     }
     throw apiError;
@@ -21,7 +21,7 @@ export async function updateProfile(data: Partial<User>): Promise<User> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return { ...mockUser, ...data };
     }
     throw apiError;
@@ -34,7 +34,7 @@ export async function fetchSettings(): Promise<AppSettings> {
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return mockSettings;
     }
     throw apiError;
@@ -47,7 +47,7 @@ export async function updateSettings(data: Partial<AppSettings>): Promise<AppSet
     return response.data;
   } catch (error) {
     const apiError = ApiError.from(error);
-    if (__DEV__ && apiError.isNetworkError) {
+    if (__DEV__ && !USE_REAL_BACKEND && apiError.isNetworkError) {
       return { ...mockSettings, ...data };
     }
     throw apiError;
