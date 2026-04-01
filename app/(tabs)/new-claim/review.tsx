@@ -5,7 +5,7 @@
  * Each section is tappable to navigate back to the relevant step.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   Alert,
   Pressable,
@@ -17,21 +17,19 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { Button, Card, Icon, CardSkeleton, ErrorState } from '@/components/ui';
+import { Button, Card, Icon } from '@/components/ui';
 import { ClaimProgress } from '@/components/common';
 import { colors, spacing, typography } from '@/theme';
 import { CLAIM_CATEGORY_META } from '@/types';
 import { useClaimForm } from '@/hooks';
+import { useCreateClaim } from '@/hooks/mutations/useCreateClaim';
 import { formatCurrency } from '@/utils';
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 export default function NewClaimReviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { form, reset } = useClaimForm();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createClaim = useCreateClaim();
 
   const category = form.getValues('category');
   const companyName = form.getValues('companyName');
@@ -40,24 +38,26 @@ export default function NewClaimReviewScreen() {
   const categoryMeta = CLAIM_CATEGORY_META[category];
 
   const handleSubmit = useCallback(async () => {
-    setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
+    try {
+      await createClaim.mutateAsync({
+        title: `${categoryMeta?.label ?? category} — ${companyName}`,
+        category,
+        companyName,
+        description,
+        amountClaimed,
+      });
 
-    reset();
+      reset();
 
-    Alert.alert(
-      'Claim Submitted',
-      'Your claim has been submitted successfully. You can track its progress from your dashboard.',
-      [
-        {
-          text: 'Go to Dashboard',
-          onPress: () => router.replace('/'),
-        },
-      ],
-    );
-  }, [reset, router]);
+      Alert.alert(
+        'Claim Submitted',
+        'Your claim has been submitted successfully. You can track its progress from your dashboard.',
+        [{ text: 'Go to Dashboard', onPress: () => router.replace('/') }],
+      );
+    } catch {
+      Alert.alert('Submission Failed', 'Something went wrong. Please try again.');
+    }
+  }, [createClaim, category, categoryMeta, companyName, description, amountClaimed, reset, router]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -78,42 +78,6 @@ export default function NewClaimReviewScreen() {
   const handleEditEvidence = useCallback(() => {
     router.push('/new-claim/evidence');
   }, [router]);
-
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.progressContainer}>
-            <ClaimProgress currentStep={5} totalSteps={5} />
-          </View>
-          <CardSkeleton style={styles.skeletonCard} />
-          <CardSkeleton style={styles.skeletonCard} />
-          <CardSkeleton style={styles.skeletonCard} />
-        </ScrollView>
-      </View>
-    );
-  }
-
-  if (screenState === 'error') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ErrorState
-          title="Unable to load review"
-          description="Something went wrong. Please try again."
-          onRetry={handleRetry}
-        />
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -248,7 +212,7 @@ export default function NewClaimReviewScreen() {
           label="Submit Claim"
           icon="check"
           onPress={handleSubmit}
-          loading={isSubmitting}
+          loading={createClaim.isPending}
           disabled={!companyName || !description || amountClaimed <= 0}
           fullWidth
           accessibilityLabel="Submit your claim"
@@ -349,8 +313,5 @@ const styles = StyleSheet.create({
   footerBackRow: {
     alignItems: 'center',
     marginTop: spacing[1],
-  },
-  skeletonCard: {
-    marginBottom: spacing[4],
   },
 });

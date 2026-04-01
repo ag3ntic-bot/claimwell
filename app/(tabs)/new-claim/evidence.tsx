@@ -7,7 +7,9 @@
 
 import React, { useState, useCallback } from 'react';
 import {
+  ActionSheetIOS,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,45 +18,93 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 
-import { Button, Icon, CardSkeleton, ErrorState } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { ClaimProgress } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 interface EvidenceItem {
   id: string;
   name: string;
   type: 'photo' | 'document';
   size: string;
+  uri: string;
+  mimeType: string;
+}
+
+function formatFileSize(bytes: number | undefined): string {
+  if (!bytes) return 'Unknown size';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function NewClaimEvidenceScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
   const [evidenceItems, setEvidenceItems] = useState<EvidenceItem[]>([]);
 
-  const handleAddEvidence = useCallback(() => {
-    // In production this would open the device file picker
-    // For now, mock adding an evidence item
-    const mockItems: EvidenceItem[] = [
-      { id: `ev_${Date.now()}_1`, name: 'Purchase Receipt.pdf', type: 'document', size: '820 KB' },
-      { id: `ev_${Date.now()}_2`, name: 'Product Photo.jpg', type: 'photo', size: '3.4 MB' },
-      { id: `ev_${Date.now()}_3`, name: 'Support Chat.html', type: 'document', size: '245 KB' },
-    ];
-
-    const nextItem = mockItems[evidenceItems.length % mockItems.length];
-    if (evidenceItems.length >= 3) {
-      Alert.alert(
-        'Maximum evidence',
-        'You have reached the maximum number of evidence items for this demo.',
-      );
-      return;
+  const pickImage = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setEvidenceItems((prev) => [
+        ...prev,
+        {
+          id: `ev_${Date.now()}`,
+          name: asset.fileName ?? `Photo_${Date.now()}.jpg`,
+          type: 'photo',
+          size: formatFileSize(asset.fileSize),
+          uri: asset.uri,
+          mimeType: asset.mimeType ?? 'image/jpeg',
+        },
+      ]);
     }
-    setEvidenceItems((prev) => [...prev, { ...nextItem, id: `ev_${Date.now()}` }]);
-  }, [evidenceItems]);
+  }, []);
+
+  const pickDocument = useCallback(async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*', 'text/*'],
+      copyToCacheDirectory: true,
+    });
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setEvidenceItems((prev) => [
+        ...prev,
+        {
+          id: `ev_${Date.now()}`,
+          name: asset.name,
+          type: 'document',
+          size: formatFileSize(asset.size),
+          uri: asset.uri,
+          mimeType: asset.mimeType ?? 'application/octet-stream',
+        },
+      ]);
+    }
+  }, []);
+
+  const handleAddEvidence = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options: ['Cancel', 'Choose Photo', 'Choose Document'], cancelButtonIndex: 0 },
+        (index) => {
+          if (index === 1) pickImage();
+          if (index === 2) pickDocument();
+        },
+      );
+    } else {
+      Alert.alert('Add Evidence', 'Choose a source', [
+        { text: 'Photo', onPress: pickImage },
+        { text: 'Document', onPress: pickDocument },
+        { text: 'Cancel', style: 'cancel' },
+      ]);
+    }
+  }, [pickImage, pickDocument]);
 
   const handleRemoveEvidence = useCallback((id: string) => {
     setEvidenceItems((prev) => prev.filter((item) => item.id !== id));
@@ -71,40 +121,6 @@ export default function NewClaimEvidenceScreen() {
   const handleSkip = useCallback(() => {
     router.push('/new-claim/review');
   }, [router]);
-
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.progressContainer}>
-            <ClaimProgress currentStep={4} totalSteps={5} />
-          </View>
-          <CardSkeleton style={styles.skeletonCard} />
-        </ScrollView>
-      </View>
-    );
-  }
-
-  if (screenState === 'error') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ErrorState
-          title="Unable to load"
-          description="Something went wrong. Please try again."
-          onRetry={handleRetry}
-        />
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>

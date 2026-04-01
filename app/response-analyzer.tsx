@@ -8,6 +8,7 @@
 
 import React, { useState, useCallback } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -24,45 +25,51 @@ import {
   Button,
   Card,
   Icon,
-  CardSkeleton,
-  ErrorState,
   ProgressBar,
 } from '@/components/ui';
 import { ResponseInput, SentimentCard, AnalysisCard, StrategyPreview } from '@/components/analyzer';
 import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography } from '@/theme';
+import { useAnalyzeResponse } from '@/hooks/mutations/useAnalyzeResponse';
 
-type ScreenState = 'loading' | 'error' | 'ready';
-
-const MOCK_ANALYSIS = {
-  sentiment: 'Dismissive',
-  sentimentScore: 0.75,
-  sentimentDescription:
-    'The response uses deflective language and avoids directly addressing the core issue. Key phrases like "upon further review" and "we are unable to" signal a prepared denial template rather than genuine engagement.',
-  analysisText:
-    'The company response contains several red flags that indicate a formulaic denial rather than a genuine review of your case. The representative references "company policy" without citing specific terms, and contradicts their own earlier support agent who acknowledged the defect. This inconsistency is a significant leverage point for your appeal.',
-  quotedText:
-    'Upon further review, we have determined that the damage to your device is consistent with accidental impact and is therefore not covered under the standard warranty.',
-  resolutionProbability: 82,
-  strategyDraft:
-    'Reference the contradiction between the support agent and denial letter to establish inconsistency in their own process.\nCite the Magnuson-Moss Warranty Act to shift the burden of proof to the company.\nRequest specific diagnostic data they claim supports accidental damage — they likely do not have it.\nSet a firm 14-day deadline for resolution before escalating to the FTC and state attorney general.',
-};
+interface AnalysisResult {
+  sentiment: string;
+  sentimentScore: number;
+  sentimentDescription: string;
+  analysisText: string;
+  quotedText: string;
+  resolutionProbability: number;
+  strategyDraft: string;
+}
 
 export default function ResponseAnalyzerScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
   const [responseText, setResponseText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const analyzeResponse = useAnalyzeResponse();
+
+  const showResults = analysis !== null;
 
   const handleAnalyze = useCallback(async () => {
-    setIsAnalyzing(true);
-    // Simulate AI analysis
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsAnalyzing(false);
-    setShowResults(true);
-  }, []);
+    try {
+      const result = await analyzeResponse.mutateAsync({
+        responseText,
+        claimContext: {},
+      });
+      setAnalysis({
+        sentiment: result.sentiment ?? 'Unknown',
+        sentimentScore: Math.abs(result.sentimentScore ?? 0),
+        sentimentDescription: result.recommendation ?? '',
+        analysisText: result.strategyDraft ?? '',
+        quotedText: responseText.slice(0, 200),
+        resolutionProbability: Math.round((result.resolutionProbability ?? 0) * 100),
+        strategyDraft: result.strategyDraft ?? '',
+      });
+    } catch {
+      Alert.alert('Analysis Failed', 'Could not analyze the response. Please try again.');
+    }
+  }, [analyzeResponse, responseText]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -76,45 +83,10 @@ export default function ResponseAnalyzerScreen() {
     router.push('/templates/');
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
   const handleReset = useCallback(() => {
     setResponseText('');
-    setShowResults(false);
+    setAnalysis(null);
   }, []);
-
-  if (screenState === 'loading') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.headerArea}>
-            <CardSkeleton />
-          </View>
-          <CardSkeleton style={styles.skeletonCard} />
-          <CardSkeleton style={styles.skeletonCard} />
-        </ScrollView>
-      </View>
-    );
-  }
-
-  if (screenState === 'error') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ErrorState
-          title="Analyzer unavailable"
-          description="The response analyzer is temporarily unavailable. Please try again."
-          onRetry={handleRetry}
-        />
-      </View>
-    );
-  }
 
   return (
     <KeyboardAvoidingView
@@ -161,7 +133,7 @@ export default function ResponseAnalyzerScreen() {
               value={responseText}
               onChangeText={setResponseText}
               onAnalyze={handleAnalyze}
-              isAnalyzing={isAnalyzing}
+              isAnalyzing={analyzeResponse.isPending}
             />
           </View>
         )}
@@ -174,8 +146,8 @@ export default function ResponseAnalyzerScreen() {
               {/* Main Analysis Card */}
               <View style={styles.bentoMainCard}>
                 <AnalysisCard
-                  analysis={MOCK_ANALYSIS.analysisText}
-                  quotedText={MOCK_ANALYSIS.quotedText}
+                  analysis={analysis!.analysisText}
+                  quotedText={analysis!.quotedText}
                   onGenerateReply={handleGenerateReply}
                   onRecommendEscalation={() => {}}
                 />
@@ -187,9 +159,9 @@ export default function ResponseAnalyzerScreen() {
               {/* Sentiment Card */}
               <View style={styles.bentoHalfCard}>
                 <SentimentCard
-                  sentiment={MOCK_ANALYSIS.sentiment}
-                  score={MOCK_ANALYSIS.sentimentScore}
-                  description={MOCK_ANALYSIS.sentimentDescription}
+                  sentiment={analysis!.sentiment}
+                  score={analysis!.sentimentScore}
+                  description={analysis!.sentimentDescription}
                 />
               </View>
 
@@ -197,14 +169,14 @@ export default function ResponseAnalyzerScreen() {
               <View style={styles.bentoHalfCard}>
                 <Card
                   style={styles.probabilityCard}
-                  accessibilityLabel={`Resolution probability: ${MOCK_ANALYSIS.resolutionProbability}%`}
+                  accessibilityLabel={`Resolution probability: ${analysis!.resolutionProbability}%`}
                 >
                   <Text style={styles.probabilityLabel}>Resolution{'\n'}Probability</Text>
                   <Text style={styles.probabilityValue}>
-                    {MOCK_ANALYSIS.resolutionProbability}%
+                    {analysis!.resolutionProbability}%
                   </Text>
                   <ProgressBar
-                    progress={MOCK_ANALYSIS.resolutionProbability / 100}
+                    progress={analysis!.resolutionProbability / 100}
                     variant="primary"
                     height={6}
                   />
@@ -217,7 +189,7 @@ export default function ResponseAnalyzerScreen() {
               <SectionHeader title="Suggested Strategy" />
               <View style={styles.strategyCard}>
                 <StrategyPreview
-                  draft={MOCK_ANALYSIS.strategyDraft}
+                  draft={analysis!.strategyDraft}
                   onViewFullTemplate={handleViewFullTemplate}
                 />
               </View>

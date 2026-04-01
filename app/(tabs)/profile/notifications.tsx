@@ -5,7 +5,7 @@
  * push notifications, email notifications, and claim updates.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 
 import { Icon } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { updateSettings, fetchSettings } from '@/services/api/user';
 
 interface ToggleItem {
   id: string;
@@ -72,9 +73,22 @@ export default function NotificationsSettingsScreen() {
     resolved: true,
   });
 
-  const handleToggle = useCallback((id: string) => {
-    setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  useEffect(() => {
+    fetchSettings().then(settings => {
+      setToggles(prev => ({
+        ...prev,
+        push: settings.notifications,
+        email: settings.emailNotifications,
+      }));
+    }).catch(() => {});
   }, []);
+
+  const handleToggle = useCallback((id: string) => {
+    const newValue = !toggles[id];
+    setToggles((prev) => ({ ...prev, [id]: newValue }));
+    if (id === 'push') updateSettings({ notifications: newValue }).catch(() => {});
+    if (id === 'email') updateSettings({ emailNotifications: newValue }).catch(() => {});
+  }, [toggles]);
 
   const handleBack = useCallback(() => {
     router.back();

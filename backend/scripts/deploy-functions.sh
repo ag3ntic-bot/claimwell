@@ -33,7 +33,7 @@ echo "Deploying Edge Functions..."
 # via supabase.auth.getUser() in _shared/auth.ts.
 FUNCTIONS=(
   auth-login auth-signup auth-logout
-  claims claims-by-id claims-summary claims-evidence evidence-delete
+  claims claims-by-id claims-summary claims-evidence claims-timeline evidence-delete
   templates templates-search
   user-profile user-settings
   ai-summarize ai-extract ai-detect-missing ai-score-claim

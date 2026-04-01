@@ -4,7 +4,7 @@
  * Biometric lock toggle, data export, and privacy controls.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Alert,
   Pressable,
@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 
 import { Button, Icon } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { updateSettings, fetchSettings } from '@/services/api/user';
 export default function PrivacySettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -26,6 +27,17 @@ export default function PrivacySettingsScreen() {
   const [biometricLock, setBiometricLock] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    fetchSettings().then(settings => {
+      setBiometricLock(settings.biometricLock);
+    }).catch(() => {});
+  }, []);
+
+  const handleBiometricToggle = useCallback((value: boolean) => {
+    setBiometricLock(value);
+    updateSettings({ biometricLock: value }).catch(() => {});
+  }, []);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -103,7 +115,7 @@ export default function PrivacySettingsScreen() {
             </View>
             <Switch
               value={biometricLock}
-              onValueChange={setBiometricLock}
+              onValueChange={handleBiometricToggle}
               trackColor={{
                 false: colors.surfaceContainerHigh,
                 true: colors.primaryContainer,

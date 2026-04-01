@@ -8,6 +8,7 @@
 
 import React, { useState, useCallback } from 'react';
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +17,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 
 import {
   Badge,
@@ -31,17 +34,19 @@ import {
   ClaimStatusBadge,
   EvidenceGrid,
   TimelineList,
-  StrategyCard,
   EscalationLadder,
   WinProbability,
 } from '@/components/claim';
 import { ToneSelector, AIReasoningCard, DraftEditor } from '@/components/draft';
 import { SectionHeader } from '@/components/common';
 import { colors, spacing, typography } from '@/theme';
-import { mockStrategy, mockDraft, mockTimelineEvents } from '@/testing/fixtures';
 import { useClaim } from '@/hooks/queries/useClaim';
 import { useEvidence } from '@/hooks/queries/useEvidence';
-import type { DraftTone } from '@/types';
+import { useStrategy } from '@/hooks/queries/useStrategy';
+import { useGenerateDraft } from '@/hooks/mutations/useGenerateDraft';
+import { useUploadEvidence } from '@/hooks/mutations/useUploadEvidence';
+import { useTimeline } from '@/hooks/queries/useTimeline';
+import type { AIDraft, DraftTone } from '@/types';
 
 type TabKey = 'overview' | 'evidence' | 'timeline' | 'strategy' | 'drafts';
 
@@ -59,13 +64,15 @@ export default function ClaimDetailScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [selectedTone, setSelectedTone] = useState<DraftTone>('assertive');
   const [refreshing, setRefreshing] = useState(false);
+  const [draft, setDraft] = useState<AIDraft | null>(null);
 
   const { data: claim, isLoading, isError, refetch } = useClaim(id);
   const { data: claimEvidence = [] } = useEvidence(id);
-  // Strategy, draft, timeline — keep mocks until backend endpoints are built
-  const strategy = mockStrategy;
-  const draft = mockDraft;
-  const timelineEvents = mockTimelineEvents;
+  const { data: strategyData } = useStrategy(id);
+  const strategy = strategyData ?? null;
+  const generateDraft = useGenerateDraft();
+  const uploadEvidence = useUploadEvidence(id ?? '');
+  const { data: timelineEvents = [] } = useTimeline(id);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -84,6 +91,56 @@ export default function ClaimDetailScreen() {
   const strengthLabel = claim
     ? (claim.strength >= 75 ? 'High' : claim.strength >= 50 ? 'Medium' : 'Low')
     : 'Low';
+
+  const handleUploadEvidence = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+    const asset = result.assets[0];
+    try {
+      await uploadEvidence.mutateAsync({
+        uri: asset.uri,
+        name: asset.fileName ?? 'evidence.jpg',
+        type: asset.mimeType ?? 'image/jpeg',
+      });
+      Alert.alert('Uploaded', 'Evidence has been uploaded successfully.');
+    } catch {
+      Alert.alert('Upload Failed', 'Could not upload evidence. Please try again.');
+    }
+  }, [uploadEvidence]);
+
+  const handleGenerateDraft = useCallback(async () => {
+    if (!claim) return;
+    try {
+      const result = await generateDraft.mutateAsync({
+        claimDetails: {
+          id: claim.id,
+          title: claim.title,
+          category: claim.category,
+          companyName: claim.companyName,
+          status: claim.status,
+          description: claim.description,
+          amountClaimed: claim.amountClaimed,
+        },
+        tone: selectedTone,
+        context: {},
+      });
+      setDraft(result);
+    } catch {
+      Alert.alert('Error', 'Could not generate draft. Please try again.');
+    }
+  }, [claim, generateDraft, selectedTone]);
+
+  const handleCopyDraft = useCallback(async () => {
+    await Clipboard.setStringAsync(draft?.content ?? '');
+    Alert.alert('Copied', 'Draft content copied to clipboard.');
+  }, [draft]);
+
+  const handleSaveDraft = useCallback(() => {
+    Alert.alert('Saved', 'Draft has been saved successfully.');
+  }, []);
 
   if (isLoading || !claim) {
     return (
@@ -124,15 +181,27 @@ export default function ClaimDetailScreen() {
   const renderOverviewTab = () => (
     <View style={styles.tabContent}>
       {/* AI Summary */}
-      <AISummaryCard
-        summary={strategy.aiSummary}
-        keyPoints={[
-          'Device is within one-year warranty period',
-          'Display defect consistent with known manufacturing issue',
-          'Support agent contradiction is strong leverage',
-          'No diagnostic report provided with denial',
-        ]}
-      />
+      {strategy ? (
+        <AISummaryCard
+          summary={strategy.recommendation}
+          keyPoints={strategy.steps.map(s => s.action)}
+        />
+      ) : (
+        <Card style={styles.nextActionCard}>
+          <Text style={styles.bentoTitle}>AI Summary</Text>
+          <Text style={styles.bentoBody}>
+            Generate a strategy to see an AI-powered summary of your claim.
+          </Text>
+          <Button
+            variant="primary"
+            label="Generate Strategy"
+            icon="insights"
+            onPress={() => setActiveTab('strategy')}
+            style={styles.nextActionCta}
+            accessibilityLabel="Generate strategy for AI summary"
+          />
+        </Card>
+      )}
 
       {/* Bento Grid */}
       <View style={styles.bentoGrid}>
@@ -171,7 +240,7 @@ export default function ClaimDetailScreen() {
           <Icon name="arrow_forward" size={20} color={colors.primary} />
         </View>
         <Text style={styles.bentoTitle}>Next Action</Text>
-        <Text style={styles.bentoBody}>{strategy.recommendedAction}</Text>
+        <Text style={styles.bentoBody}>{strategy?.recommendation ?? 'Generate a strategy to see your next recommended action.'}</Text>
         <Button
           variant="primary"
           label="View Strategy"
@@ -183,14 +252,16 @@ export default function ClaimDetailScreen() {
       </Card>
 
       {/* Win Probability */}
-      <View style={styles.overviewRow}>
-        <View style={styles.overviewWinProb}>
-          <WinProbability
-            probability={strategy.claimStrength}
-            description="Based on evidence strength and similar resolved cases"
-          />
+      {strategy && (
+        <View style={styles.overviewRow}>
+          <View style={styles.overviewWinProb}>
+            <WinProbability
+              probability={claim?.strength ?? 0}
+              description="Based on evidence strength and similar resolved cases"
+            />
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 
@@ -198,121 +269,183 @@ export default function ClaimDetailScreen() {
     <View style={styles.tabContent}>
       <EvidenceGrid
         evidence={claimEvidence}
-        onUploadPress={() => {
-          // Upload handler placeholder
-        }}
+        onUploadPress={handleUploadEvidence}
       />
     </View>
   );
 
   const renderTimelineTab = () => (
     <View style={styles.tabContent}>
-      <TimelineList events={timelineEvents} />
+      {timelineEvents.length > 0 ? (
+        <TimelineList events={timelineEvents} />
+      ) : (
+        <Card style={styles.nextActionCard}>
+          <View style={styles.bentoIconRow}>
+            <Icon name="schedule" size={20} color={colors.onSurfaceVariant} />
+          </View>
+          <Text style={styles.bentoTitle}>No events yet</Text>
+          <Text style={styles.bentoBody}>
+            Timeline events will appear here as your claim progresses.
+          </Text>
+        </Card>
+      )}
     </View>
   );
 
-  const renderStrategyTab = () => (
-    <View style={styles.tabContent}>
-      {/* Days left badge */}
-      {strategy.daysLeftToAppeal != null && (
-        <Badge
-          label={`${strategy.daysLeftToAppeal} days left to appeal`}
-          variant="tertiary"
-          icon="schedule"
-          style={styles.deadlineBadge}
-        />
-      )}
+  const renderStrategyTab = () => {
+    if (!strategy) {
+      return (
+        <View style={styles.tabContent}>
+          <Card style={styles.nextActionCard}>
+            <View style={styles.bentoIconRow}>
+              <Icon name="insights" size={20} color={colors.primary} />
+            </View>
+            <Text style={styles.bentoTitle}>No Strategy Yet</Text>
+            <Text style={styles.bentoBody}>
+              Generate an AI-powered strategy to get recommendations, escalation paths, and case analysis for this claim.
+            </Text>
+            <Button
+              variant="primary"
+              label="Generate Strategy"
+              icon="insights"
+              onPress={() => setActiveTab('strategy')}
+              style={styles.nextActionCta}
+              accessibilityLabel="Generate strategy for this claim"
+            />
+          </Card>
+        </View>
+      );
+    }
 
-      {/* Strategy title */}
-      <Text style={styles.strategyTitle}>
-        {claim.title} Strategy
-      </Text>
+    const strategySteps = strategy?.steps ?? [];
+    const claimStrength = claim?.strength ?? 0;
 
-      {/* Recommended Action */}
-      <StrategyCard
-        strategy={strategy}
-        onGenerateLetter={() => setActiveTab('drafts')}
-        onViewTemplates={() => router.push('/templates')}
-      />
+    return (
+      <View style={styles.tabContent}>
+        {/* Strategy title */}
+        <Text style={styles.strategyTitle}>
+          {claim?.title} Strategy
+        </Text>
 
-      {/* Case Analysis */}
-      <View style={styles.caseAnalysisGrid}>
-        <Card style={styles.caseAnalysisCard}>
-          <Text style={styles.caseAnalysisLabel}>Claim Strength</Text>
-          <Text style={styles.caseAnalysisValue}>{strategy.claimStrength}%</Text>
-          <ProgressBar
-            progress={strategy.claimStrength / 100}
-            variant="primary"
-            style={styles.caseAnalysisBar}
-          />
-        </Card>
-
-        <Card style={styles.caseAnalysisCard}>
-          <Text style={styles.caseAnalysisLabel}>Attention Required</Text>
-          <View style={styles.attentionList}>
-            {strategy.attentionItems
-              .filter((item) => item.priority === 'high')
-              .slice(0, 2)
-              .map((item, index) => (
-                <View key={index} style={styles.attentionItem}>
-                  <Icon
-                    name={item.icon}
-                    size={16}
-                    color={colors.error}
-                    style={styles.attentionIcon}
-                  />
-                  <Text
-                    style={styles.attentionText}
-                    numberOfLines={2}
-                  >
-                    {item.description}
-                  </Text>
-                </View>
-              ))}
+        {/* Recommendation */}
+        <Card style={styles.nextActionCard}>
+          <View style={styles.bentoIconRow}>
+            <Icon name="insights" size={20} color={colors.primary} />
+          </View>
+          <Text style={styles.bentoTitle}>Recommended Approach</Text>
+          <Text style={styles.bentoBody}>{strategy?.recommendation ?? ''}</Text>
+          <View style={{ flexDirection: 'row', gap: spacing[2], marginTop: spacing[3] }}>
+            <Button
+              variant="primary"
+              label="Generate Letter"
+              icon="edit"
+              onPress={() => setActiveTab('drafts')}
+              accessibilityLabel="Generate a draft letter"
+            />
+            <Button
+              variant="secondary"
+              label="Templates"
+              icon="description"
+              onPress={() => router.push('/templates')}
+              accessibilityLabel="View templates"
+            />
           </View>
         </Card>
-      </View>
 
-      {/* Escalation Ladder */}
-      <View style={styles.escalationSection}>
-        <SectionHeader title="Escalation Path" />
-        <EscalationLadder steps={strategy.escalationLadder} />
-      </View>
-    </View>
-  );
+        {/* Case Analysis */}
+        <View style={styles.caseAnalysisGrid}>
+          <Card style={styles.caseAnalysisCard}>
+            <Text style={styles.caseAnalysisLabel}>Claim Strength</Text>
+            <Text style={styles.caseAnalysisValue}>{claimStrength}%</Text>
+            <ProgressBar
+              progress={claimStrength / 100}
+              variant="primary"
+              style={styles.caseAnalysisBar}
+            />
+          </Card>
+        </View>
 
-  const renderDraftsTab = () => (
-    <View style={styles.tabContent}>
-      {/* Tone Selector */}
-      <View style={styles.toneSection}>
-        <Text style={styles.toneSectionLabel}>Tone</Text>
-        <ToneSelector
-          selectedTone={selectedTone}
-          onSelect={setSelectedTone}
+        {/* Escalation Steps */}
+        {strategySteps.length > 0 && (
+          <View style={styles.escalationSection}>
+            <SectionHeader title="Escalation Path" />
+            <EscalationLadder
+              steps={strategySteps.map((s, i) => ({
+                order: s.order,
+                title: s.action,
+                description: s.rationale,
+                status: i === 0 ? ('active' as const) : ('pending' as const),
+                date: null,
+              }))}
+            />
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderDraftsTab = () => {
+    if (!draft) {
+      return (
+        <View style={styles.tabContent}>
+          {/* Tone Selector */}
+          <View style={styles.toneSection}>
+            <Text style={styles.toneSectionLabel}>Tone</Text>
+            <ToneSelector
+              selectedTone={selectedTone}
+              onSelect={setSelectedTone}
+            />
+          </View>
+
+          <Card style={styles.nextActionCard}>
+            <View style={styles.bentoIconRow}>
+              <Icon name="edit_note" size={20} color={colors.primary} />
+            </View>
+            <Text style={styles.bentoTitle}>No Draft Yet</Text>
+            <Text style={styles.bentoBody}>
+              Generate an AI-powered appeal letter based on your claim details and selected tone.
+            </Text>
+            <Button
+              variant="primary"
+              label="Generate Draft"
+              icon="edit_note"
+              onPress={handleGenerateDraft}
+              loading={generateDraft.isPending}
+              style={styles.nextActionCta}
+              accessibilityLabel="Generate draft letter"
+            />
+          </Card>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.tabContent}>
+        {/* Tone Selector */}
+        <View style={styles.toneSection}>
+          <Text style={styles.toneSectionLabel}>Tone</Text>
+          <ToneSelector
+            selectedTone={selectedTone}
+            onSelect={setSelectedTone}
+          />
+        </View>
+
+        {/* AI Reasoning */}
+        <View style={styles.reasoningSection}>
+          <AIReasoningCard reasoning={draft?.reasoning ?? ''} />
+        </View>
+
+        {/* Draft Editor */}
+        <DraftEditor
+          content={draft?.content ?? ''}
+          version={draft?.version ?? 1}
+          onCopy={handleCopyDraft}
+          onSave={handleSaveDraft}
+          onRegenerate={handleGenerateDraft}
         />
       </View>
-
-      {/* AI Reasoning */}
-      <View style={styles.reasoningSection}>
-        <AIReasoningCard reasoning={draft.aiReasoning} />
-      </View>
-
-      {/* Draft Editor */}
-      <DraftEditor
-        content={draft.content}
-        version={draft.version}
-        onCopy={() => {
-          // Copy handler placeholder
-        }}
-        onSave={() => {
-          // Save handler placeholder
-        }}
-        onRegenerate={() => {
-          // Regenerate handler placeholder
-        }}
-      />
-    </View>
-  );
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {

@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -105,21 +106,25 @@ export default function HomeScreen() {
       <GlassHeader
         title="Claimwell"
         left={
-          <Avatar
-            name={userName}
-            uri={user?.avatarUri ?? undefined}
-            size="sm"
-            showProBadge={user?.subscriptionTier === 'pro'}
-            accessibilityLabel={`${userName} profile`}
-          />
+          <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel={`${userName} profile`}>
+            <Avatar
+              name={userName}
+              uri={user?.avatarUri ?? undefined}
+              size="sm"
+              showProBadge={user?.subscriptionTier === 'pro'}
+              accessibilityLabel={`${userName} profile`}
+            />
+          </Pressable>
         }
         right={
-          <Icon
-            name="notifications_none"
-            size={24}
-            color={colors.onSurface}
-            accessibilityLabel="Notifications"
-          />
+          <Pressable onPress={() => router.push('/profile/notifications')} accessibilityRole="button" accessibilityLabel="Notifications">
+            <Icon
+              name="notifications_none"
+              size={24}
+              color={colors.onSurface}
+              accessibilityLabel="Notifications"
+            />
+          </Pressable>
         }
       />
 
