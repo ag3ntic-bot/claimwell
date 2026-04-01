@@ -23,7 +23,10 @@
         "backgroundColor": "#F9F9F9"
       },
       "package": "com.claimwell.app",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -38,6 +41,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8a6f8ffe-c191-4107-8fe9-4339b650ca45"
+      }
+    },
+    "owner": "ag3ntic"
   }
 }
