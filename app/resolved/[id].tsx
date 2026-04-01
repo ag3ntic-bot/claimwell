@@ -6,7 +6,7 @@
  * and archive/download actions.
  */
 
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Animated,
   Pressable,
@@ -19,21 +19,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import {
-  Badge,
   Button,
   Card,
   Icon,
   ProgressBar,
   CardSkeleton,
-  ErrorState,
-  EmptyState,
 } from '@/components/ui';
 import { MetricBlock } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
 import { useClaim } from '@/hooks/queries/useClaim';
 import { formatCurrency, formatAbsoluteDate } from '@/utils';
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 const RESOLUTION_STAGES = ['Initiated', 'Negotiation', 'Resolved'];
 
@@ -41,7 +36,7 @@ export default function ResolvedClaimScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [screenState, setScreenState] = useState<ScreenState>('ready');
+  const { data: claim, isLoading } = useClaim(id);
 
   // Pulsing ring animation
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -64,12 +59,6 @@ export default function ResolvedClaimScreen() {
     return () => animation.stop();
   }, [pulseAnim]);
 
-  const { data: claim } = useClaim(id);
-
-  if (!claim) return null;
-
-  const resolvedAmount = claim.amountRecovered ?? claim.amountClaimed;
-
   const handleBack = useCallback(() => {
     router.back();
   }, [router]);
@@ -82,12 +71,7 @@ export default function ResolvedClaimScreen() {
     // In production, this would trigger a report download
   }, []);
 
-  const handleRetry = useCallback(() => {
-    setScreenState('loading');
-    setTimeout(() => setScreenState('ready'), 600);
-  }, []);
-
-  if (screenState === 'loading') {
+  if (isLoading || !claim) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ScrollView
@@ -105,17 +89,7 @@ export default function ResolvedClaimScreen() {
     );
   }
 
-  if (screenState === 'error') {
-    return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ErrorState
-          title="Unable to load"
-          description="Could not load the resolved claim details. Please try again."
-          onRetry={handleRetry}
-        />
-      </View>
-    );
-  }
+  const resolvedAmount = claim.amountRecovered ?? claim.amountClaimed;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -243,7 +217,7 @@ export default function ResolvedClaimScreen() {
             <ProgressBar progress={1} variant="primary" height={6} />
           </View>
           <View style={styles.stagesRow}>
-            {RESOLUTION_STAGES.map((stage, index) => (
+            {RESOLUTION_STAGES.map((stage, _index) => (
               <View key={stage} style={styles.stageItem}>
                 <View
                   style={[

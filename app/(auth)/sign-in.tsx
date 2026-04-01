@@ -38,7 +38,7 @@ export default function SignInScreen() {
     try {
       await login(email, password);
       router.replace('/(tabs)');
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Sign in failed',
         'Please check your credentials and try again.',

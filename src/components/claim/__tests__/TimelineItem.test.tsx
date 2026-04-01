@@ -11,7 +11,7 @@ import { TimelineItem } from '../TimelineItem';
 import { mockTimelineEvents } from '@/testing/fixtures';
 
 const purchaseEvent = mockTimelineEvents[0]; // claim_created
-const defectEvent = mockTimelineEvents[1]; // evidence_uploaded
+const _defectEvent = mockTimelineEvents[1]; // evidence_uploaded
 const denialEvent = mockTimelineEvents[3]; // denial_received
 const followUpEvent = mockTimelineEvents[4]; // follow_up - no attachment
 

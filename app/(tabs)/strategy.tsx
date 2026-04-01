@@ -29,8 +29,6 @@ import { colors, spacing, typography, radii } from '@/theme';
 import { useClaims } from '@/hooks/queries/useClaims';
 import type { Claim } from '@/types';
 
-type ScreenState = 'loading' | 'error' | 'ready';
-
 export default function StrategyHubScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);

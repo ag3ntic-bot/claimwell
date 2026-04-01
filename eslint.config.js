@@ -46,7 +46,7 @@ module.exports = [
       'react/prop-types': 'off',
       'react/no-unescaped-entities': 'off',
       'react/no-direct-mutation-state': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-require-imports': 'off',
     },

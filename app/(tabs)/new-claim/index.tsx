@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { Button, Card, Icon, Input, CardSkeleton, ErrorState } from '@/components/ui';
+import { Button, Icon, Input, CardSkeleton, ErrorState } from '@/components/ui';
 import { ClaimProgress } from '@/components/common';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
 import { CLAIM_CATEGORY_META } from '@/types';
@@ -163,7 +163,7 @@ export default function NewClaimCategoryScreen() {
 
         {/* Category Grid */}
         <View style={styles.grid}>
-          {filteredCategories.map((key, index) => {
+          {filteredCategories.map((key, _index) => {
             const meta = CLAIM_CATEGORY_META[key];
             const isSelected = selectedCategory === key;
             const isOther = key === 'other';

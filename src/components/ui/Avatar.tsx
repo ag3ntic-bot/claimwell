@@ -13,7 +13,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import { colors, radii, typography } from '@/theme';
+import { colors, typography } from '@/theme';
 
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 

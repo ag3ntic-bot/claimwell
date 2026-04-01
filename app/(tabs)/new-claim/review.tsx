@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router';
 
 import { Button, Card, Icon, CardSkeleton, ErrorState } from '@/components/ui';
 import { ClaimProgress } from '@/components/common';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 import { CLAIM_CATEGORY_META } from '@/types';
 import { useClaimForm } from '@/hooks';
 import { formatCurrency } from '@/utils';

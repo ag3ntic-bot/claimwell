@@ -30,7 +30,7 @@ import {
 } from '@/components/ui';
 import { ResponseInput, SentimentCard, AnalysisCard, StrategyPreview } from '@/components/analyzer';
 import { SectionHeader } from '@/components/common';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 type ScreenState = 'loading' | 'error' | 'ready';
 

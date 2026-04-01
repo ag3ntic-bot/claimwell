@@ -12,7 +12,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import { colors, radii } from '@/theme';
+import { colors } from '@/theme';
 
 export type ProgressBarVariant = 'primary' | 'error' | 'tertiary';
 

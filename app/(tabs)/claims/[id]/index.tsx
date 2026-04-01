@@ -37,7 +37,7 @@ import {
 } from '@/components/claim';
 import { ToneSelector, AIReasoningCard, DraftEditor } from '@/components/draft';
 import { SectionHeader } from '@/components/common';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 import { mockStrategy, mockDraft, mockTimelineEvents } from '@/testing/fixtures';
 import { useClaim } from '@/hooks/queries/useClaim';
 import { useEvidence } from '@/hooks/queries/useEvidence';
@@ -52,8 +52,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'strategy', label: 'Strategy' },
   { key: 'drafts', label: 'Drafts' },
 ];
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 export default function ClaimDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

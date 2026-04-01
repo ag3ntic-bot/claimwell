@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { Badge, Button, Card, Icon, EmptyState, ErrorState, CardSkeleton } from '@/components/ui';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { colors, spacing, typography, radii } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 
 type ScreenState = 'loading' | 'error' | 'ready';

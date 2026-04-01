@@ -8,7 +8,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Icon } from '@/components/ui';
-import { colors, radii, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 export interface StrategyPreviewProps {
   /** Strategy draft text (lines separated by newlines become numbered points) */

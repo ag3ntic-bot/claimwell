@@ -5,7 +5,7 @@
  * category badge, and action buttons to use or customize.
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -26,11 +26,9 @@ import {
   ErrorState,
   EmptyState,
 } from '@/components/ui';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 import { TEMPLATE_CATEGORY_META } from '@/types';
 import { useTemplates } from '@/hooks/queries/useTemplates';
-
-type ScreenState = 'loading' | 'error' | 'ready';
 
 export default function TemplateDetailScreen() {
   const router = useRouter();

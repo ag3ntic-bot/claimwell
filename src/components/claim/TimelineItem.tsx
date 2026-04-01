@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
 import { TimelineEvent, TIMELINE_EVENT_META } from '@/types';

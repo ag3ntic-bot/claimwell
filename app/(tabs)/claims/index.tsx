@@ -45,8 +45,6 @@ const STATUS_GROUPS: Record<FilterKey, ClaimStatus[] | null> = {
   resolved: ['resolved', 'archived'],
 };
 
-type ScreenState = 'loading' | 'error' | 'ready';
-
 export default function ClaimsListScreen() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');

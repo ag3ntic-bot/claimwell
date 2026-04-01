@@ -23,7 +23,7 @@ describe('NewClaimFormSchema', () => {
   });
 
   it('fails when category is missing', () => {
-    const { category, ...rest } = validData;
+    const { category: _category, ...rest } = validData;
     const result = NewClaimFormSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
@@ -61,7 +61,7 @@ describe('NewClaimFormSchema', () => {
   });
 
   it('fails when description is missing', () => {
-    const { description, ...rest } = validData;
+    const { description: _description, ...rest } = validData;
     const result = NewClaimFormSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });

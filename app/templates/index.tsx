@@ -19,21 +19,14 @@ import { useRouter } from 'expo-router';
 import {
   Button,
   Card,
-  Chip,
   Icon,
   CardSkeleton,
   ErrorState,
 } from '@/components/ui';
 import { TemplateCategoryCard, TemplateSearchBar } from '@/components/template';
-import { SectionHeader } from '@/components/common';
-import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { TEMPLATE_CATEGORY_META } from '@/types';
+import { colors, spacing, typography } from '@/theme';
 import type { TemplateCategory } from '@/types';
 import { useTemplates } from '@/hooks/queries/useTemplates';
-
-type ScreenState = 'loading' | 'error' | 'ready';
-
-const REFUND_TAGS = ['Airlines', 'Uber', 'Retail'];
 
 export default function TemplateLibraryScreen() {
   const router = useRouter();
@@ -48,20 +41,8 @@ export default function TemplateLibraryScreen() {
         router.push(`/templates/${template.id}`);
       }
     },
-    [router],
+    [router, templates],
   );
-
-  const handleSearchSubmit = useCallback(() => {
-    if (!searchQuery.trim()) return;
-    const match = templates.find(
-      (t) =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
-    );
-    if (match) {
-      router.push(`/templates/${match.id}`);
-    }
-  }, [searchQuery, router]);
 
   const handleBack = useCallback(() => {
     router.back();

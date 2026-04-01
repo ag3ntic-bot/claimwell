@@ -49,7 +49,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   accessibilityLabel,
   style,
 }) => {
-  const [isFocused, setIsFocused] = useState(false);
+  const [, setIsFocused] = useState(false);
   const borderAnim = useRef(new Animated.Value(0)).current;
 
   const handleFocus = useCallback(() => {

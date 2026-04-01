@@ -1,7 +1,6 @@
 import { MockAIProvider } from '../providers/mock';
 import type { AIProvider } from '../providers/types';
-import type { AITask, AIInput, AIOutput } from '@/types';
-import { AI_TASK_CONFIG } from '@/types';
+import type { AIInput, AIOutput } from '@/types';
 
 // We cannot import aiRouter directly because it uses __DEV__ at module scope,
 // so we test the AIRouter behavior through a fresh instance approach.

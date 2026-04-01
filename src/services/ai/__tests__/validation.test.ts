@@ -145,19 +145,19 @@ describe('AI validation schemas', () => {
     });
 
     it('fails when sentiment is missing', () => {
-      const { sentiment, ...rest } = validAnalysis;
+      const { sentiment: _sentiment, ...rest } = validAnalysis;
       const result = AIResponseAnalysisSchema.safeParse(rest);
       expect(result.success).toBe(false);
     });
 
     it('fails when recommendation is missing', () => {
-      const { recommendation, ...rest } = validAnalysis;
+      const { recommendation: _recommendation, ...rest } = validAnalysis;
       const result = AIResponseAnalysisSchema.safeParse(rest);
       expect(result.success).toBe(false);
     });
 
     it('fails when strategyDraft is missing', () => {
-      const { strategyDraft, ...rest } = validAnalysis;
+      const { strategyDraft: _strategyDraft, ...rest } = validAnalysis;
       const result = AIResponseAnalysisSchema.safeParse(rest);
       expect(result.success).toBe(false);
     });

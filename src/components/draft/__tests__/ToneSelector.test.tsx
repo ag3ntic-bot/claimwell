@@ -21,7 +21,7 @@ describe('ToneSelector', () => {
   it('highlights the selected tone with radio state', () => {
     render(<ToneSelector selectedTone="assertive" onSelect={jest.fn()} />);
 
-    const radioButtons = screen.getAllByRole('radio');
+    const _radioButtons = screen.getAllByRole('radio');
     // Find the assertive one via accessibility label
     const assertiveBtn = screen.getByLabelText(/Assertive tone/);
     expect(assertiveBtn.props.accessibilityState).toEqual(

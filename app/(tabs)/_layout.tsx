@@ -8,7 +8,6 @@
 
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { colors } from '@/theme';
 import { BottomTabBar } from '@/components/ui';
 
 export default function TabLayout() {

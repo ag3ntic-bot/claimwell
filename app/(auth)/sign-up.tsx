@@ -64,7 +64,7 @@ export default function SignUpScreen() {
       // Production sign-up would call the API here
       Alert.alert('Success', 'Account created successfully!');
       router.replace('/(tabs)');
-    } catch (error) {
+    } catch {
       Alert.alert(
         'Sign up failed',
         'Something went wrong. Please try again.',

@@ -17,9 +17,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { Icon, Card, ErrorState } from '@/components/ui';
+import { Icon } from '@/components/ui';
 import { colors, spacing, typography, radii, shadows } from '@/theme';
-import { fetchSettings } from '@/services/api/user';
 
 interface ToggleItem {
   id: string;

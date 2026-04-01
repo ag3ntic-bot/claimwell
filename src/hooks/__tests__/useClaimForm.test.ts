@@ -9,7 +9,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act } from '@testing-library/react-native';
 import { useClaimForm } from '../useClaimForm';
 import { removeItem } from '@/services/storage/mmkv';
 

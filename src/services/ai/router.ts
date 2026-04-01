@@ -123,7 +123,6 @@ class AIRouter {
   // ── Budget helpers ───────────────────────────────────────────────────────
 
   private getOrCreateBudget(tier: AITier): TierBudget {
-    const now = Date.now();
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const dayStart = startOfDay.getTime();
